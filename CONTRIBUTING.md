@@ -120,7 +120,7 @@ pos-supermarket/
 │
 └── src/
     ├── main/
-    │   ├── java/pos/   # đổi theo package thật của nhóm
+    │   ├── java/pos/   
     │   │   ├── PosApplication.java
     │   │   ├── config/          # security, web config
     │   │   ├── controller/      # C: nhận yêu cầu từ giao diện
@@ -142,11 +142,6 @@ pos-supermarket/
     │           ├── img/
     │           └── js/          # JS biên dịch ra, KHÔNG commit
     └── test/java/pos/  # JUnit
-```
-
-Thư mục rỗng thì thêm file `.gitkeep` để Git giữ lại. Tên thư mục và package: chữ thường, tiếng Anh, không dấu, không khoảng trắng.
-
----
 
 ## 6. Quy tắc từng lớp (MVC)
 

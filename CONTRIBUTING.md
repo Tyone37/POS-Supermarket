@@ -143,6 +143,9 @@ pos-supermarket/
     │           └── js/          # JS biên dịch ra, KHÔNG commit
     └── test/java/pos/  # JUnit
 
+```
+---
+
 ## 6. Quy tắc từng lớp (MVC)
 
 | Lớp | Việc của lớp | Không được làm |

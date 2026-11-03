@@ -14,6 +14,10 @@ import pos.entity.ShiftStatus;
 
 public interface ShiftRepository extends JpaRepository<Shift, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Shift s where s.id = :id")
+    Optional<Shift> findLockedById(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from Shift s where s.employee.id = :employeeId and s.status = pos.entity.ShiftStatus.OPEN")
     Optional<Shift> findOpenLocked(@Param("employeeId") Long employeeId);
 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thêm sản phẩm mới — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <script defer th:src="@{/js/product/create-form.js}"></script>
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="page-content">
+    <div class="page-heading">
+      <div>
+        <h1>Thêm sản phẩm mới</h1>
+        <p>Nhập thông tin sản phẩm để quản lý và bán tại quầy.</p>
+      </div>
+    </div>
+    <form class="create-layout" id="create-product" method="post" th:action="@{/products}" th:object="${product}">
+      <section class="surface" aria-labelledby="product-information">
+        <h2 id="product-information">Thông tin sản phẩm</h2>
+        <p class="section-note">Các trường có dấu <span class="required">*</span> là bắt buộc.</p>
+        <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+          <p class="mb-0" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
+        </div>
+        <div class="field-group">
+          <label class="form-label" for="barcode">Mã vạch <span class="required">*</span></label>
+          <input class="form-control" th:errorclass="is-invalid" th:field="*{barcode}" type="text"
+                 maxlength="50" required autocomplete="off" placeholder="Nhập mã vạch sản phẩm"
+                 aria-describedby="barcode-error" th:attr="aria-invalid=${#fields.hasErrors('barcode')}">
+          <div class="invalid-feedback" id="barcode-error" th:errors="*{barcode}"></div>
+        </div>
+        <div class="field-group">
+          <label class="form-label" for="name">Tên sản phẩm <span class="required">*</span></label>
+          <input class="form-control" th:errorclass="is-invalid" th:field="*{name}" type="text"
+                 maxlength="200" required placeholder="Nhập tên sản phẩm" aria-describedby="name-error"
+                 th:attr="aria-invalid=${#fields.hasErrors('name')}">
+          <div class="invalid-feedback" id="name-error" th:errors="*{name}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="form-label" for="categoryId">Loại hàng</label>
+            <select class="form-select" th:errorclass="is-invalid" th:field="*{categoryId}"
+                    aria-describedby="category-error" th:attr="aria-invalid=${#fields.hasErrors('categoryId')}">
+              <option value="">Chưa phân loại (mặc định)</option>
+              <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
+            </select>
+            <div class="invalid-feedback" id="category-error" th:errors="*{categoryId}"></div>
+          </div>
+          <div class="field-group">
+            <label class="form-label" for="unitId">Đơn vị</label>
+            <select class="form-select" th:errorclass="is-invalid" th:field="*{unitId}"
+                    aria-describedby="unit-error" th:attr="aria-invalid=${#fields.hasErrors('unitId')}">
+              <option value="">Cái (mặc định)</option>
+              <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}"></option>
+            </select>
+            <div class="invalid-feedback" id="unit-error" th:errors="*{unitId}"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="form-label" for="salePrice">Đơn giá (đ) <span class="required">*</span></label>
+            <input class="form-control" th:errorclass="is-invalid" th:field="*{salePrice}" type="text"
+                   inputmode="decimal" required placeholder="Ví dụ: 32000" aria-describedby="price-hint price-error"
+                   th:attr="aria-invalid=${#fields.hasErrors('salePrice')}">
+            <div class="form-text" id="price-hint">Lớn hơn 0; dùng dấu chấm nếu có phần thập phân.</div>
+            <div class="invalid-feedback" id="price-error" th:errors="*{salePrice}"></div>
+          </div>
+          <div class="field-group">
+            <label class="form-label" for="stockQuantity">Số lượng <span class="required">*</span></label>
+            <input class="form-control" th:errorclass="is-invalid" th:field="*{stockQuantity}" type="text"
+                   inputmode="decimal" required placeholder="Ví dụ: 50" aria-describedby="stock-hint stock-error"
+                   th:attr="aria-invalid=${#fields.hasErrors('stockQuantity')}">
+            <div class="form-text" id="stock-hint">Tồn đầu kỳ, lớn hơn hoặc bằng 0.</div>
+            <div class="invalid-feedback" id="stock-error" th:errors="*{stockQuantity}"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <a class="btn btn-outline-secondary" th:href="@{/products}">Hủy</a>
+          <button class="btn btn-dark" type="submit">Lưu sản phẩm</button>
+        </div>
+      </section>
+      <aside class="surface status-card" aria-labelledby="product-status">
+        <h2 id="product-status">Sẵn sàng bán tại quầy</h2>
+        <span class="status-badge"><span aria-hidden="true">●</span> Đang bán</span>
+        <p>Sản phẩm sau khi lưu sẽ có trạng thái Đang bán.</p>
+        <div class="form-warning" role="alert" th:if="${#fields.hasAnyErrors()}">
+          Chưa lưu thay đổi. Kiểm tra các trường có thông báo lỗi.
+        </div>
+      </aside>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý sản phẩm — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="page-content">
+    <div class="page-heading">
+      <div>
+        <h1>Quản lý sản phẩm</h1>
+        <p>Danh sách sản phẩm trong cửa hàng.</p>
+      </div>
+      <a class="btn btn-dark" th:href="@{/products/new}"><span aria-hidden="true">+</span> Thêm sản phẩm</a>
+    </div>
+    <div class="alert alert-success" role="status" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <section class="surface product-list" aria-label="Danh sách sản phẩm">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Tên sản phẩm</th>
+              <th scope="col">Mã vạch</th>
+              <th scope="col">Đơn vị</th>
+              <th scope="col" class="text-end">Đơn giá (đ)</th>
+              <th scope="col" class="text-end">Tồn kho</th>
+              <th scope="col">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="product : ${products.content}">
+              <td class="product-name" th:text="${product.name}"></td>
+              <td th:text="${product.barcode}"></td>
+              <td th:text="${product.unitName}"></td>
+              <td class="text-end" th:text="${#numbers.formatDecimal(product.salePrice, 1, 'POINT', 2, 'COMMA')}"></td>
+              <td class="text-end" th:text="${product.stockQuantity.stripTrailingZeros().toPlainString()}"></td>
+              <td>
+                <span class="status-badge" th:if="${product.status.name() == 'ACTIVE'}">● Đang bán</span>
+                <span class="status-badge stopped" th:unless="${product.status.name() == 'ACTIVE'}">● Ngừng bán</span>
+              </td>
+            </tr>
+            <tr th:if="${products.empty}">
+              <td colspan="6" class="empty-list">Chưa có sản phẩm. Chọn “Thêm sản phẩm” để bắt đầu.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <nav class="list-pagination" aria-label="Phân trang sản phẩm" th:if="${products.totalPages > 1}">
+        <a class="btn btn-outline-secondary btn-sm" th:if="${products.hasPrevious()}"
+           th:href="@{/products(page=${products.number - 1})}">Trang trước</a>
+        <span th:text="|Trang ${products.number + 1} / ${products.totalPages}|"></span>
+        <a class="btn btn-outline-secondary btn-sm" th:if="${products.hasNext()}"
+           th:href="@{/products(page=${products.number + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,77 +1,91 @@
 # POS Supermarket
 
-Nền kỹ thuật Java/Spring Boot/Maven, Thymeleaf và TypeScript. Bootstrap hiện chưa có giao diện nghiệp vụ, đăng nhập,
-Entity hoặc kết nối MySQL. Mọi request HTTP bị từ chối với mã **403** cho đến khi cơ chế bảo mật chung được tích hợp.
-Không có tài khoản/mật khẩu mặc định; CSRF vẫn bật.
+SCRUM-28: thêm sản phẩm, báo lỗi tại từng trường và hiển thị danh sách phân trang bằng Spring MVC/Thymeleaf.
+Route `/products`, `/products/new` yêu cầu authority `PRODUCT_MANAGE`. Chưa có đăng nhập/tài khoản mặc định;
+chờ tích hợp auth của Toàn. CSRF bật. Khi chưa có Authentication thật, truy cập màn hình nghiệp vụ trả **403**.
 
 ## Công cụ và phiên bản
 
 | Thành phần | Phiên bản |
 |---|---|
-| Java target | 21; đã kiểm tra bằng Oracle JDK 25.0.2 |
-| Spring Boot | 4.1.2, pin trong `pom.xml` |
-| Maven | Đã kiểm tra bằng 3.9.11 |
-| Node.js / npm | Đã kiểm tra bằng 24.13.0 / 11.6.2 |
-| TypeScript | 7.0.2, pin trong manifest và lockfile |
-| MySQL | Chưa kết nối/chạy thử; phiên bản runtime và schema chờ nhóm duyệt |
+| Java target | 21; máy phát triển dùng Oracle JDK 25.0.2 |
+| Spring Boot | 4.1.2 |
+| Maven | 3.9.11 |
+| Node.js / npm | 24.13.0 / 11.6.2 |
+| TypeScript | 7.0.2 |
+| Bootstrap CSS | 5.3.8 qua WebJar, phục vụ cục bộ |
+| MySQL | DDL S đã thử cục bộ bằng MySQL Community 9.7; môi trường chung chờ nhóm xác nhận |
 
-Các phiên bản bootstrap cần được nhóm review trước khi tích hợp. Bootstrap CSS/JS sẽ được thêm khi có view cần dùng;
-stack giao diện vẫn là Thymeleaf/Bootstrap/TypeScript. Không cài bundler hoặc thư viện nghiệp vụ trong bước này.
+Không dùng React, Tailwind, bundler hoặc CDN. Các phiên bản/dependency cần nhóm review trước khi tích hợp.
 
-## Build và chạy trên Windows
+## Build
 
-Cần JDK 21 trở lên, Maven và Node.js/npm. Đặt `JAVA_HOME` tới JDK và thêm thư mục `bin` của Maven/Node.js vào PATH.
-Từ thư mục repo, chạy PowerShell:
+Từ thư mục repo, với JDK 21+, Maven và Node.js/npm trên PATH:
 
 ```powershell
 npm.cmd ci
 npm.cmd run build
-mvn.cmd -B verify -DskipTests=false -Dmaven.test.skip=false -DfailIfNoTests=true
-mvn.cmd spring-boot:run
+mvn.cmd -B clean package -Dmaven.test.skip=true
 ```
 
-Dùng `npm.cmd` để tránh một shim `npm.ps1` hỏng ở môi trường Windows hiện tại. Không cần thay đổi cấu hình toàn máy;
-có thể đặt biến môi trường trong riêng phiên PowerShell. Máy đã dùng để kiểm tra có Maven sẵn trong IntelliJ:
+Theo phân công của người dùng, người khác phụ trách viết và chạy kiểm thử, bao gồm unit test.
+Repo hiện không chứa test tự động hoặc dependency JUnit/Mockito. Tài liệu ca kiểm thử được bàn giao riêng
+trong thư mục `Báo cáo` của workspace cha; kết quả thực hiện để người phụ trách kiểm thử ghi nhận.
+Các lệnh trên chỉ biên dịch và đóng gói, không nghiệm thu chức năng.
+
+Dùng `npm.cmd` để tránh shim PowerShell hỏng trong môi trường Windows hiện tại. Có thể cấu hình toolchain cho riêng
+phiên PowerShell, không cần sửa cấu hình toàn máy:
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-25.0.2'
 $env:PATH = 'C:\Program Files\JetBrains\IntelliJ IDEA 2026.1\plugins\maven\lib\maven3\bin;C:\Program Files\nodejs;' + $env:PATH
 ```
 
-Ứng dụng mặc định nghe cổng 8080. Nhận 403 khi mở trình duyệt là hành vi bootstrap đã chọn, chưa phải màn hình POS.
-Nhấn Ctrl+C để dừng. Trên Linux/macOS, dùng `npm`/`mvn` thay cho tên có đuôi `.cmd`.
+Nguồn TypeScript nằm trong `src/main/ts/`; JS sinh ở `src/main/resources/static/js/` đã được gitignore.
+Chạy `npm.cmd run build` **trước Maven package/verify** để JAR chứa JS hiện hành; không sửa/commit JS sinh ra.
+Chạy `npm.cmd run watch` khi làm frontend. Linux/macOS dùng `npm`/`mvn` thay đuôi `.cmd`.
 
-TypeScript bật strict và chỉ phát sinh JS khi không có lỗi. Nguồn ở `src/main/ts/`, đầu ra ở
-`src/main/resources/static/js/` đã được gitignore; không sửa/commit JS sinh ra. `main.ts` hiện chỉ là module entrypoint,
-chưa có hành vi UI. Chạy `npm.cmd run watch` khi làm frontend; build frontend trước Maven để JAR chứa JS mới nhất.
+## Cấu hình chạy cục bộ
 
-## Cấu hình local và dữ liệu
-
-`application.properties` chứa cấu hình chung không nhạy cảm. Khi cần profile local:
+Người phụ trách môi trường chuẩn bị CSDL MySQL riêng và áp dụng `database/schema.sql`, sau đó `database/seed.sql`
+một lần trên CSDL mới. Không áp các file này lên dữ liệu đang dùng. SQL init tự động bị tắt;
+Hibernate chỉ `validate` schema, không tự tạo/sửa bảng; `open-in-view=false`, JDBC timezone UTC.
 
 ```powershell
 Copy-Item src/main/resources/application-example.properties src/main/resources/application-local.properties
+# Cung cấp POS_DB_URL, POS_DB_USER, POS_DB_PASSWORD qua môi trường riêng; không commit credential.
+# URL ví dụ: jdbc:mysql://localhost:3306/pos_local?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+npm.cmd run build
 mvn.cmd spring-boot:run '-Dspring-boot.run.profiles=local'
 ```
 
-File local đã được gitignore. Mẫu chỉ tham chiếu `POS_DB_URL`, `POS_DB_USER`, `POS_DB_PASSWORD`, không chứa credential
-mặc định. Chỉ cung cấp chúng khi task tích hợp MySQL đã được duyệt; bootstrap chưa có JDBC/JPA nên không truy cập DB.
+File local đã gitignore. App nghe cổng 8080; Ctrl+C để dừng. Cần tích hợp Authentication thật cấp `PRODUCT_MANAGE`
+trước khi dùng form. `BootstrapSecurityConfig` hiện không chứa tài khoản; người tích hợp auth thay cấu hình này
+bằng hợp đồng chung, giữ quyền route/service và CSRF.
 
-Không chạy `database/schema.sql` hoặc `database/seed.sql`: hai file vẫn rỗng, chờ schema chung được review.
-SQL init bị tắt. Cấu hình `ddl-auto=validate`, `open-in-view=false` và Hibernate JDBC timezone UTC được chuẩn bị theo
-convention; chúng chỉ có tác dụng sau khi tích hợp JPA. Không dùng H2 hoặc Hibernate tự tạo/sửa bảng để thay bước duyệt.
+## Hợp đồng tạo sản phẩm
 
-## Kiểm chứng và giới hạn
+- Barcode là chuỗi, bỏ khoảng trắng hai đầu, giữ số 0 đầu và nội dung còn lại; tối đa 50 ký tự.
+- Tên bắt buộc, bỏ khoảng trắng hai đầu, tối đa 200 ký tự. Giá > 0 theo DECIMAL(18,2), tồn >= 0 theo DECIMAL(15,3).
+  Số thập phân nhập bằng dấu chấm. Không tự làm tròn lượng; phải khớp scale 0 hoặc 3 của đơn vị.
+- Category trống dùng code `UNCLASSIFIED` ACTIVE; unit trống dùng `CAI` scale 0; seed cung cấp hai bản ghi này.
+  Nếu người dùng chọn, category phải ACTIVE và unit phải tồn tại; không dùng ID cố định.
+- Server sinh SKU `SP` + 18 ký tự hex viết hoa, trạng thái ACTIVE và reserved 0. Không nhận các trường này từ form.
+- UNIQUE barcode/SKU trong MySQL phân xử trùng, kể cả ghi đồng thời. Trùng barcode báo tại ô mã vạch;
+  trùng SKU yêu cầu thử lại; lỗi SQL khác được truyền ra, không báo lưu thành công.
+- Tồn > 0 tạo ADJUSTMENT với `PRODUCT_CREATE:<SKU>` trong cùng transaction; tồn 0 không ghi movement.
+- Danh sách 20 hàng/trang, mới nhất trước theo createdAt/id; giá giữ hai chữ số thập phân.
 
-`BootstrapSmokeTest` khởi động server thật ở cổng ngẫu nhiên, không dùng DB hay mock server. Test kiểm tra
-`GET /products`, `GET /login` và `POST /products` không có CSRF đều bị từ chối 403. Đây là smoke test của bootstrap,
-chưa chứng minh auth/role/CSRF đầy đủ hoặc AC tạo sản phẩm của SCRUM-28.
+DDL là bản S người dùng cung cấp và duyệt dùng cho triển khai, chưa thay thế review schema chung của nhóm.
+Code chỉ ánh xạ sản phẩm/category/unit/movement; các bảng khác trong DDL phục vụ FK, không đồng nghĩa đã có checkout.
+Luồng quét SCRUM-35 phải dùng cùng quy tắc barcode; AC28-4 chờ tích hợp. Tài liệu ca thử không chứng minh race/rollback MySQL,
+phiên đăng nhập thật hoặc mức khớp giao diện trên trình duyệt.
 
-Verifier ngoài repo được gọi từ workspace cha:
+Verifier ngoài repo, chạy từ workspace cha:
 
 ```powershell
 pwsh -NoProfile -File ./POS-Harness/scripts/verify.ps1 -ProjectRoot ./POS-Supermarket
 ```
 
-Verifier đầy đủ vẫn dừng với **exit 2** vì schema rỗng. Kết quả Maven/TypeScript riêng không thay thế điều kiện này
-hoặc kiểm thử nghiệp vụ/tích hợp MySQL. Không thêm SQL giả hoặc bỏ preflight để báo ứng dụng đã sẵn sàng.
+Verifier dùng `failIfNoTests=true`; khi người phụ trách chưa thêm bộ test, verifier sẽ báo thiếu test.
+Không sửa verifier chung để bỏ điều kiện này; dùng lệnh build ở trên cho phần việc viết code hiện tại.

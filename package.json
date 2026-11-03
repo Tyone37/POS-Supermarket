@@ -1,0 +1,12 @@
+{
+  "name": "pos-supermarket",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

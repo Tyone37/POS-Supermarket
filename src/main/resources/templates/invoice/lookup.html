@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tra cứu hóa đơn — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/invoice.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="invoice-content">
+    <div class="page-heading"><div><h1>Tra cứu hóa đơn</h1><p>Nhập chính xác mã hóa đơn cần xem.</p></div></div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <section class="surface invoice-lookup" aria-labelledby="lookup-title">
+      <h2 id="lookup-title">Tìm hóa đơn</h2>
+      <form method="get" th:action="@{/invoices/find}">
+        <label class="form-label" for="number">Mã hóa đơn</label>
+        <input class="form-control" id="number" name="number" type="text" maxlength="30" required th:value="${number}">
+        <button class="btn btn-dark" type="submit">Tra cứu</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

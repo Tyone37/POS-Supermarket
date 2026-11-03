@@ -1,0 +1,29 @@
+body { background: #f8fafc; }
+.invoice-content { max-width: 1200px; margin: auto; padding: 24px; }
+.invoice-breadcrumb { margin-bottom: 20px; color: var(--muted); }
+.invoice-breadcrumb a { color: var(--ink); }
+.invoice-breadcrumb span { margin-left: 6px; }
+.invoice-title { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.invoice-status { border-radius: 20px; padding: 5px 10px; color: #12613b; background: #e0f4e9; font-size: 12px; }
+.invoice-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 24px 0 32px; }
+.invoice-meta dt, .invoice-totals dt { color: var(--muted); font-weight: 500; }
+.invoice-meta dd { margin: 6px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.invoice-muted { color: var(--muted); font-size: 12px; }
+.invoice-totals { max-width: 360px; margin: 24px 0 0 auto; }
+.invoice-totals div { display: flex; justify-content: space-between; gap: 20px; padding: 8px 0; }
+.invoice-totals dd { margin: 0; text-align: right; font-weight: 600; }
+.invoice-totals .invoice-total { border-top: 1px solid var(--border); padding-top: 16px; }
+.invoice-lookup { max-width: 560px; }
+.invoice-lookup form { margin-top: 20px; }
+.invoice-lookup button { margin-top: 16px; }
+@media (max-width: 768px) { .invoice-meta { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .invoice-content { padding: 20px 16px; } .invoice-meta { grid-template-columns: 1fr; } }
+@media print {
+  .app-header, .invoice-breadcrumb, .invoice-actions { display: none; }
+  body { background: #fff; }
+  .invoice-content { max-width: none; padding: 0; }
+  .invoice-document { border: 0; padding: 0; }
+  .invoice-table { overflow: visible; }
+  .invoice-table thead { display: table-header-group; }
+  .invoice-table tr { break-inside: avoid; }
+}

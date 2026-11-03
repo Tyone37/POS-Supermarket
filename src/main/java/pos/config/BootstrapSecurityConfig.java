@@ -20,6 +20,7 @@ public class BootstrapSecurityConfig {
                 .requestMatchers("/shifts/current").hasAuthority("SHIFT_VIEW")
                 .requestMatchers("/shifts", "/shifts/new").hasAuthority("SHIFT_OPEN")
                 .requestMatchers("/sale", "/sale/**").hasAuthority("SALE_USE")
+                .requestMatchers("/invoices", "/invoices/**").hasAuthority("INVOICE_VIEW")
                 .anyRequest().denyAll());
         return http.build();
     }

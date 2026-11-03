@@ -2,6 +2,8 @@ package pos.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +41,8 @@ import pos.repository.ShiftRepository;
 @Service
 @PreAuthorize("hasAuthority('SALE_USE')")
 public class SaleService {
+    private static final DateTimeFormatter DISPLAY_TIME = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+            .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
     private static final BigDecimal MAX_QUANTITY = new BigDecimal("999999999999.999");
     private final CurrentActorService actors;
     private final ShiftRepository shifts;
@@ -173,6 +177,25 @@ public class SaleService {
         recalculate(order, "");
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void cancel(Long id, boolean confirmed) {
+        if (!confirmed) {
+            throw new FormValidationException(Map.of("", "Vui lòng xác nhận hủy đơn."));
+        }
+        Shift shift = lockedShift(actors.requireEmployee());
+        Order order = orders.findLockedById(id)
+                .filter(value -> value.getShift().getId().equals(shift.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            return;
+        }
+        if (order.getStatus() != OrderStatus.DRAFT) {
+            throw new FormValidationException(Map.of("", "Chỉ có thể hủy đơn nháp."));
+        }
+        order.cancel(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        orders.saveAndFlush(order);
+    }
+
     private Order lockedOrder(Long orderId) {
         Shift shift = lockedShift(actors.requireEmployee());
         return orders.findLockedById(orderId).filter(value -> value.getStatus() == OrderStatus.DRAFT
@@ -240,6 +263,7 @@ public class SaleService {
                         item.getDiscountAmount(), item.getLineTotal())).toList();
         return new SaleView(order.getId(), order.getOrderNo(), order.getStatus().name(),
                 order.getShift().getId(), order.getShift().getRegister().getName(), actor.fullName(), lines,
-                order.getSubtotalAmount(), order.getDiscountAmount(), order.getTotalAmount());
+                order.getSubtotalAmount(), order.getDiscountAmount(), order.getTotalAmount(),
+                DISPLAY_TIME.format(order.getCreatedAt()));
     }
 }

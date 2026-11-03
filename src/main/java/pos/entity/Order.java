@@ -66,6 +66,14 @@ public class Order {
         this.createdAt = now;
     }
 
+    public void cancel(Instant now) {
+        if (status != OrderStatus.DRAFT) {
+            throw new IllegalStateException("Chỉ có thể hủy đơn nháp.");
+        }
+        status = OrderStatus.CANCELLED;
+        cancelledAt = now;
+    }
+
     public void recalculate(List<OrderItem> items) {
         subtotalAmount = BigDecimal.ZERO;
         discountAmount = BigDecimal.ZERO;

@@ -116,6 +116,25 @@ public class SaleController {
         }
     }
 
+    @GetMapping("/orders/{id}/cancel")
+    public String cancelForm(@PathVariable Long id, Model model) {
+        model.addAttribute("sale", sales.view(id));
+        return "sale/cancel";
+    }
+
+    @PostMapping("/orders/{id}/cancel")
+    public String cancel(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean confirmed,
+            Model model, RedirectAttributes redirect) {
+        try {
+            sales.cancel(id, confirmed);
+            redirect.addFlashAttribute("successMessage", "Đã hủy đơn nháp");
+            return "redirect:/sale";
+        } catch (FormValidationException exception) {
+            model.addAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
+            return cancelForm(id, model);
+        }
+    }
+
     private String shiftRequired(FormValidationException exception, RedirectAttributes redirect) {
         redirect.addFlashAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
         return "redirect:/shifts/current";

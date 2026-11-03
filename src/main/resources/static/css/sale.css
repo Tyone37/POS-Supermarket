@@ -32,3 +32,11 @@
 #remove-dialog { max-width: 420px; border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
 #remove-dialog::backdrop { background: #0008; }
 #remove-dialog .form-actions { margin-top: 24px; }
+
+.cancel-warning { margin-bottom: 24px; padding: 12px; border-radius: 6px; background: #fff4dc; color: #704700; }
+.cancel-details { margin: 16px 0 24px; }
+.cancel-details div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; }
+.cancel-details dt { color: var(--muted); font-weight: 500; }
+.cancel-details dd { margin: 0; text-align: right; font-weight: 600; }
+.cancel-confirm form { margin-top: 20px; }
+.cancel-confirm .btn { display: block; width: 100%; margin-top: 16px; }

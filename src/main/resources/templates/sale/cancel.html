@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xác nhận hủy đơn chưa thanh toán — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/sale.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="sale-content">
+    <div class="page-heading"><div><h1>Xác nhận hủy đơn chưa thanh toán</h1><p>Kiểm tra thông tin đơn trước khi xác nhận.</p></div></div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="sale-layout">
+      <section class="surface" aria-labelledby="cancel-order-title">
+        <div class="cancel-warning" role="note"><img th:src="@{/img/sale/triangle-alert.svg}" width="20" height="20" alt="" aria-hidden="true"> Đơn sẽ chuyển sang trạng thái đã hủy và được giữ lại trong lịch sử.</div>
+        <h2 id="cancel-order-title">Thông tin đơn hàng</h2>
+        <dl class="cancel-details">
+          <div><dt>Mã đơn</dt><dd th:text="${sale.orderNo}"></dd></div>
+          <div><dt>Thời gian tạo</dt><dd th:text="${sale.createdAt}"></dd></div>
+          <div><dt>Nhân viên</dt><dd th:text="${sale.actorName}"></dd></div>
+          <div><dt>Trạng thái</dt><dd th:text="${sale.status == 'DRAFT' ? 'Đơn nháp' : sale.status}"></dd></div>
+        </dl>
+        <h2>Sản phẩm trong đơn</h2>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th scope="col">Sản phẩm</th><th scope="col" class="text-end">Số lượng</th><th scope="col" class="text-end">Giảm giá (đ)</th><th scope="col" class="text-end">Thành tiền (đ)</th></tr></thead>
+            <tbody>
+              <tr th:each="line : ${sale.lines}"><td th:text="${line.productName}"></td><td class="text-end" th:text="${line.quantity.stripTrailingZeros().toPlainString()}"></td><td class="text-end" th:text="${#numbers.formatDecimal(line.discountAmount, 1, 'POINT', 2, 'COMMA')}"></td><td class="text-end" th:text="${#numbers.formatDecimal(line.lineTotal, 1, 'POINT', 2, 'COMMA')}"></td></tr>
+              <tr th:if="${#lists.isEmpty(sale.lines)}"><td colspan="4" class="empty-list">Chưa có sản phẩm trong đơn.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <dl class="cancel-details"><div><dt>Giảm giá</dt><dd th:text="|${#numbers.formatDecimal(sale.discountAmount, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div><div><dt>Tổng cộng</dt><dd th:text="|${#numbers.formatDecimal(sale.totalAmount, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div></dl>
+      </section>
+      <aside class="surface cancel-confirm" aria-labelledby="cancel-confirm-title">
+        <h2 id="cancel-confirm-title">Xác nhận hủy đơn</h2>
+        <p>Hủy đơn chưa thanh toán không hoàn tiền, không thay đổi tồn kho hoặc doanh thu.</p>
+        <form method="post" th:action="@{/sale/orders/{id}/cancel(id=${sale.id})}">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="confirmed" name="confirmed" value="true" required>
+            <label class="form-check-label" for="confirmed">Tôi xác nhận hủy đơn hàng này.</label>
+          </div>
+          <button class="btn btn-dark" type="submit"><img th:src="@{/img/sale/trash.svg}" width="18" height="18" alt="" aria-hidden="true"> Xác nhận hủy đơn</button>
+          <a class="btn btn-outline-secondary" th:href="@{/sale/orders/{id}(id=${sale.id})}">Quay lại đơn hàng</a>
+        </form>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
+
+

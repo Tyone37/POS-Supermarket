@@ -35,6 +35,7 @@
           <div class="sale-code-input"><img th:src="@{/img/sale/scan.svg}" width="18" height="18" alt="" aria-hidden="true"><input class="form-control" id="code" name="code" type="text" maxlength="50" required autocomplete="off" autofocus th:value="${inputCode}" placeholder="Nhập mã vạch hoặc SKU"></div>
           <button class="btn btn-dark" type="submit"><img th:src="@{/img/sale/plus.svg}" width="18" height="18" alt="" aria-hidden="true"> Thêm vào đơn</button>
         </form>
+        <a class="btn btn-outline-secondary mb-3" th:href="@{/sale/orders/{id}/products(id=${sale.id})}">Tìm sản phẩm</a>
         <div class="table-responsive">
           <table class="table align-middle mb-0">
             <thead><tr><th scope="col">Sản phẩm</th><th scope="col">Đơn vị</th><th scope="col" class="text-end">Số lượng</th><th scope="col" class="text-end">Đơn giá (đ)</th><th scope="col" class="text-end">Giảm giá (đ)</th><th scope="col" class="text-end">Thành tiền (đ)</th></tr></thead>

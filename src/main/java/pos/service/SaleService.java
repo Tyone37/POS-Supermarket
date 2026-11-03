@@ -112,7 +112,21 @@ public class SaleService {
         if (productIds.size() > 1) {
             throw new FormValidationException(Map.of("code", "Mã khớp nhiều sản phẩm."));
         }
-        Product product = products.findLockedById(productIds.get(0))
+        addProduct(order, productIds.get(0));
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void addProduct(Long id, Long productId) {
+        CurrentActor actor = actors.requireEmployee();
+        Shift shift = lockedShift(actor);
+        Order order = orders.findLockedById(id).filter(value -> value.getStatus() == OrderStatus.DRAFT
+                && value.getShift().getId().equals(shift.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        addProduct(order, productId);
+    }
+
+    private void addProduct(Order order, Long productId) {
+        Product product = products.findLockedById(productId)
                 .filter(value -> value.getStatus() == ProductStatus.ACTIVE)
                 .orElseThrow(() -> new FormValidationException(Map.of("code", "Sản phẩm không khả dụng.")));
         OrderItem item = items.findByOrderIdAndProductId(order.getId(), product.getId()).orElse(null);

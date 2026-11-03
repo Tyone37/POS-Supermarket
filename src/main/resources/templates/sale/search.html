@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tìm kiếm sản phẩm — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/sale.css}">
+  <link rel="stylesheet" th:href="@{/css/sale-search.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="sale-content sale-search">
+    <div class="page-heading">
+      <div><h1>Tìm kiếm sản phẩm</h1><p>Tìm sản phẩm để thêm vào đơn hàng.</p></div>
+      <a class="btn btn-outline-secondary" th:href="@{/sale/orders/{id}(id=${sale.id})}">Quay lại đơn hàng</a>
+    </div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="sale-search-layout">
+      <section aria-labelledby="search-results-title">
+        <div class="surface search-query">
+          <form id="search-products" method="get" th:action="@{/sale/orders/{id}/products(id=${sale.id})}">
+          <label class="form-label" for="q">Tên sản phẩm hoặc SKU</label>
+          <div class="search-controls">
+            <input class="form-control" id="q" name="q" type="search" th:value="${query}" placeholder="Nhập tên sản phẩm hoặc SKU">
+            <button class="btn btn-dark" type="submit"><img th:src="@{/img/sale/search.svg}" width="18" height="18" alt="" aria-hidden="true"> Tìm kiếm</button>
+          </div>
+          </form>
+        </div>
+        <div class="search-results-heading"><h2 id="search-results-title">Kết quả tìm kiếm</h2></div>
+        <div class="surface search-empty" th:if="${products.empty}">Không tìm thấy sản phẩm phù hợp.</div>
+        <article class="surface search-result" th:each="product : ${products.content}">
+          <div class="search-image"><img th:src="@{/img/sale/package.svg}" width="22" height="22" alt="" aria-hidden="true"><span>Chưa có ảnh</span></div>
+          <div class="search-product">
+            <h3 th:text="${product.name}"></h3>
+            <p>Mã: <span th:text="${product.code}"></span> · Đơn vị: <span th:text="${product.unitName}"></span></p>
+            <p>Tồn kho: <span th:text="${product.stockQuantity.stripTrailingZeros().toPlainString()}"></span></p>
+            <strong th:text="|${#numbers.formatDecimal(product.salePrice, 1, 'POINT', 2, 'COMMA')} đ|"></strong>
+          </div>
+          <form method="post" th:action="@{/sale/orders/{id}/products/{productId}(id=${sale.id},productId=${product.id})}"><button class="btn btn-dark" type="submit">Thêm</button></form>
+        </article>
+        <nav class="list-pagination" aria-label="Phân trang kết quả" th:if="${products.totalPages > 1}">
+          <a class="btn btn-outline-secondary btn-sm" th:if="${products.hasPrevious()}" th:href="@{/sale/orders/{id}/products(id=${sale.id},q=${query},categoryId=${categoryId},page=${products.number - 1})}">Trang trước</a>
+          <span th:text="|Trang ${products.number + 1} / ${products.totalPages}|"></span>
+          <a class="btn btn-outline-secondary btn-sm" th:if="${products.hasNext()}" th:href="@{/sale/orders/{id}/products(id=${sale.id},q=${query},categoryId=${categoryId},page=${products.number + 1})}">Trang sau</a>
+        </nav>
+      </section>
+      <aside>
+        <section class="surface search-filter" aria-labelledby="filter-title">
+          <h2 id="filter-title">Bộ lọc</h2>
+          <label class="form-label" for="categoryId">Loại hàng</label>
+          <select class="form-select" id="categoryId" name="categoryId" form="search-products">
+            <option value="">Tất cả loại hàng</option>
+            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${category.id == categoryId}"></option>
+          </select>
+          <a class="btn btn-outline-secondary" th:href="@{/sale/orders/{id}/products(id=${sale.id})}">Xóa bộ lọc</a>
+        </section>
+        <section class="surface search-order" aria-labelledby="order-title">
+          <h2 id="order-title">Đơn hàng hiện tại</h2>
+          <p>Mã đơn: <strong th:text="${sale.orderNo}"></strong></p>
+          <p>Tổng cộng: <strong th:text="|${#numbers.formatDecimal(sale.totalAmount, 1, 'POINT', 2, 'COMMA')} đ|"></strong></p>
+          <a th:href="@{/sale/orders/{id}(id=${sale.id})}">Quay lại đơn hàng</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
+
+

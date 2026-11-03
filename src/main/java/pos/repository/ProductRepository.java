@@ -27,4 +27,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Product p where p.id = :id")
     Optional<Product> findLockedById(@Param("id") Long id);
+    @Query(value = """
+            SELECT p.* FROM products p
+            WHERE p.status = 'ACTIVE' AND (:categoryId IS NULL OR p.category_id = :categoryId)
+              AND (:keyword = '' OR p.code = :code OR
+                   LOWER(REPLACE(REPLACE(p.name, 'đ', 'd'), 'Đ', 'D')) COLLATE utf8mb4_unicode_ci
+                       LIKE :pattern ESCAPE '!')
+            ORDER BY p.id DESC
+            """, countQuery = """
+            SELECT COUNT(*) FROM products p
+            WHERE p.status = 'ACTIVE' AND (:categoryId IS NULL OR p.category_id = :categoryId)
+              AND (:keyword = '' OR p.code = :code OR
+                   LOWER(REPLACE(REPLACE(p.name, 'đ', 'd'), 'Đ', 'D')) COLLATE utf8mb4_unicode_ci
+                       LIKE :pattern ESCAPE '!')
+            """, nativeQuery = true)
+    Page<Product> searchActive(@Param("categoryId") Long categoryId, @Param("keyword") String keyword,
+            @Param("code") String code, @Param("pattern") String pattern, Pageable pageable);
 }

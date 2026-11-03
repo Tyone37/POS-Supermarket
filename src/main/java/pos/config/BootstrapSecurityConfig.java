@@ -18,6 +18,7 @@ public class BootstrapSecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
                 .requestMatchers("/products", "/products/**").hasAuthority("PRODUCT_MANAGE")
                 .requestMatchers("/shifts/current").hasAuthority("SHIFT_VIEW")
+                .requestMatchers("/shifts", "/shifts/new").hasAuthority("SHIFT_OPEN")
                 .anyRequest().denyAll());
         return http.build();
     }

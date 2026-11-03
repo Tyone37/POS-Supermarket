@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mở ca làm việc — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/shift.css}">
+  <script defer th:src="@{/js/shift/open-form.js}"></script>
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <div class="shift-shell">
+    <nav class="shift-nav" aria-label="Điều hướng chính">
+      <a th:href="@{/products}">Sản phẩm</a>
+      <a class="active" th:href="@{/shifts/current}" aria-current="page">Ca làm việc</a>
+    </nav>
+    <main class="shift-content">
+      <div class="page-heading">
+        <div>
+          <h1>Mở ca làm việc</h1>
+          <p>Nhập thông tin để bắt đầu ca làm việc.</p>
+        </div>
+      </div>
+      <form class="shift-layout" id="open-shift" method="post" th:action="@{/shifts}" th:object="${opening}">
+        <section class="surface" aria-labelledby="shift-information">
+          <h2 id="shift-information">Thông tin mở ca</h2>
+          <p class="section-note">Các trường có dấu <span class="required">*</span> là bắt buộc.</p>
+          <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors() or #fields.hasErrors('requestKey')}">
+            <p class="mb-0" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
+            <p class="mb-0" th:each="error : ${#fields.errors('requestKey')}" th:text="${error}"></p>
+          </div>
+          <input type="hidden" th:field="*{requestKey}">
+          <div class="field-group">
+            <label class="form-label" for="actorName">Nhân viên</label>
+            <input class="form-control" id="actorName" type="text" th:value="${actorName}" readonly>
+          </div>
+          <div class="field-group">
+            <label class="form-label" for="registerId">Quầy <span class="required">*</span></label>
+            <select class="form-select" th:errorclass="is-invalid" th:field="*{registerId}" required
+                    aria-describedby="register-error" th:attr="aria-invalid=${#fields.hasErrors('registerId')}">
+              <option value="">Chọn quầy</option>
+              <option th:each="register : ${registers}" th:value="${register.id}" th:text="${register.name}"></option>
+            </select>
+            <div class="invalid-feedback" id="register-error" th:errors="*{registerId}"></div>
+          </div>
+          <div class="field-group">
+            <label class="form-label" for="openingCash">Tiền đầu ca (đ) <span class="required">*</span></label>
+            <input class="form-control" th:errorclass="is-invalid" th:field="*{openingCash}" type="text"
+                   inputmode="decimal" required aria-describedby="cash-hint cash-error"
+                   th:attr="aria-invalid=${#fields.hasErrors('openingCash')}">
+            <div class="form-text" id="cash-hint">Lớn hơn hoặc bằng 0; dùng dấu chấm nếu có phần thập phân.</div>
+            <div class="invalid-feedback" id="cash-error" th:errors="*{openingCash}"></div>
+          </div>
+          <p class="section-note"><img th:src="@{/img/shift/clock.svg}" width="18" height="18" alt="" aria-hidden="true"> Thời gian mở ca được ghi nhận khi xác nhận thành công.</p>
+          <div class="form-actions">
+            <a class="btn btn-outline-secondary" th:href="@{/shifts/current}">Hủy</a>
+            <button class="btn btn-dark" type="submit">Xác nhận mở ca</button>
+          </div>
+        </section>
+        <aside class="surface status-card" aria-labelledby="shift-status">
+          <h2 id="shift-status">Mở ca làm việc</h2>
+          <p><img th:src="@{/img/shift/shield-check.svg}" width="18" height="18" alt="" aria-hidden="true"> Tiền đầu ca có thể bằng 0. Thời gian mở ca do hệ thống ghi nhận khi tạo ca.</p>
+          <div class="form-warning" role="alert" th:if="${#fields.hasAnyErrors()}">Chưa mở ca. Kiểm tra các thông báo lỗi.</div>
+        </aside>
+      </form>
+    </main>
+  </div>
+</body>
+</html>

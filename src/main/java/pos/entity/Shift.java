@@ -52,6 +52,17 @@ public class Shift {
     protected Shift() {
     }
 
+    public Shift(Employee employee, Register register, String shiftNo, String openRequestKey,
+            BigDecimal openingCash, Instant openedAt) {
+        this.employee = employee;
+        this.register = register;
+        this.shiftNo = shiftNo;
+        this.openRequestKey = openRequestKey;
+        this.openingCash = openingCash;
+        this.openedAt = openedAt;
+        this.status = ShiftStatus.OPEN;
+    }
+
     public Long getId() {
         return id;
     }

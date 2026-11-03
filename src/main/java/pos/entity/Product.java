@@ -94,5 +94,7 @@ public class Product {
 
     public BigDecimal getStockQuantity() { return stockQuantity; }
 
+    public BigDecimal getReservedQuantity() { return reservedQuantity; }
+
     public ProductStatus getStatus() { return status; }
 }

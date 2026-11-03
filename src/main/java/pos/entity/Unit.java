@@ -29,6 +29,8 @@ public class Unit {
 
     public Long getId() { return id; }
 
+    public String getCode() { return code; }
+
     public String getName() { return name; }
 
     public int getQuantityScale() { return quantityScale; }

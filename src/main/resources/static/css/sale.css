@@ -1,0 +1,27 @@
+.sale-content { max-width: 1440px; margin: auto; padding: 24px; }
+.sale-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+.sale-items { min-width: 0; }
+.sale-add { display: flex; gap: 12px; margin: 20px 0; }
+.sale-add .form-control { min-width: 0; }
+.sale-add .btn { white-space: nowrap; }
+.sale-items .table th, .sale-items .table td { padding: 14px 12px; }
+.sale-code { color: var(--muted); font-size: 12px; }
+.sale-summary dl { margin: 20px 0 0; }
+.sale-summary dl div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; }
+.sale-summary dt { color: var(--muted); font-weight: 500; }
+.sale-summary dd { margin: 0; text-align: right; font-weight: 600; }
+.sale-summary .sale-total { margin-top: 8px; padding-top: 18px; border-top: 1px solid var(--border); }
+.sale-summary .sale-total dt { color: var(--ink); font-weight: 700; }
+.sale-empty form { margin-top: 20px; }
+@media (max-width: 768px) {
+  .sale-content { padding: 20px 16px; }
+  .sale-layout { grid-template-columns: 1fr; gap: 20px; }
+}
+@media (max-width: 480px) {
+  .sale-add { flex-direction: column; }
+}
+
+.sale-code-input { position: relative; flex: 1; min-width: 0; }
+.sale-code-input img { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+.sale-code-input .form-control { padding-left: 38px; }
+.sale-add .btn img { vertical-align: -4px; }

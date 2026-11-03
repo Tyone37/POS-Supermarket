@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đơn bán hàng — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/sale.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <main class="sale-content">
+    <div class="page-heading">
+      <div>
+        <h1>Đơn bán hàng <span th:if="${sale != null}" th:text="${sale.orderNo}"></span></h1>
+        <p th:if="${sale != null}">Quầy: <span th:text="${sale.registerName}"></span> · Nhân viên: <span th:text="${sale.actorName}"></span></p>
+      </div>
+      <a class="btn btn-outline-secondary" th:href="@{/shifts/current}">Ca làm việc</a>
+    </div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="alert alert-success" role="status" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <section class="surface sale-empty" th:if="${sale == null}" aria-labelledby="empty-sale-title">
+      <h2 id="empty-sale-title">Chưa có đơn nháp</h2>
+      <p>Tạo đơn mới để bắt đầu thêm sản phẩm.</p>
+      <form method="post" th:action="@{/sale/orders}">
+        <button class="btn btn-dark" type="submit">Tạo đơn mới</button>
+      </form>
+    </section>
+    <div class="sale-layout" th:if="${sale != null}">
+      <section class="surface sale-items" aria-labelledby="sale-items-title">
+        <h2 id="sale-items-title">Sản phẩm trong đơn</h2>
+        <form class="sale-add" method="post" th:action="@{/sale/orders/{id}/items(id=${sale.id})}">
+          <label class="visually-hidden" for="code">Mã vạch hoặc SKU</label>
+          <div class="sale-code-input"><img th:src="@{/img/sale/scan.svg}" width="18" height="18" alt="" aria-hidden="true"><input class="form-control" id="code" name="code" type="text" maxlength="50" required autocomplete="off" autofocus th:value="${inputCode}" placeholder="Nhập mã vạch hoặc SKU"></div>
+          <button class="btn btn-dark" type="submit"><img th:src="@{/img/sale/plus.svg}" width="18" height="18" alt="" aria-hidden="true"> Thêm vào đơn</button>
+        </form>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th scope="col">Sản phẩm</th><th scope="col">Đơn vị</th><th scope="col" class="text-end">Số lượng</th><th scope="col" class="text-end">Đơn giá (đ)</th><th scope="col" class="text-end">Giảm giá (đ)</th><th scope="col" class="text-end">Thành tiền (đ)</th></tr></thead>
+            <tbody>
+              <tr th:each="line : ${sale.lines}">
+                <td><strong th:text="${line.productName}"></strong><br><span class="sale-code" th:text="${line.productCode}"></span></td>
+                <td th:text="${line.unitCode}"></td>
+                <td class="text-end" th:text="${line.quantity.stripTrailingZeros().toPlainString()}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(line.discountAmount, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(line.lineTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(sale.lines)}"><td colspan="6" class="empty-list">Chưa có sản phẩm trong đơn.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="surface sale-summary" aria-labelledby="sale-summary-title">
+        <h2 id="sale-summary-title">Tổng đơn hàng</h2>
+        <dl>
+          <div><dt>Tạm tính</dt><dd th:text="|${#numbers.formatDecimal(sale.subtotalAmount, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div>
+          <div><dt>Giảm giá</dt><dd th:text="|${#numbers.formatDecimal(sale.discountAmount, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div>
+          <div class="sale-total"><dt>Tổng cộng</dt><dd th:text="|${#numbers.formatDecimal(sale.totalAmount, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div>
+        </dl>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
+

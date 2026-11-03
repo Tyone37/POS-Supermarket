@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trạng thái ca hiện tại — POS</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/shift.css}">
+</head>
+<body>
+  <header th:replace="~{layout/header :: header}"></header>
+  <div class="shift-shell">
+    <nav class="shift-nav" aria-label="Điều hướng chính">
+      <a th:href="@{/products}">Sản phẩm</a>
+      <a class="active" th:href="@{/shifts/current}" aria-current="page">Ca làm việc</a>
+    </nav>
+    <main class="shift-content">
+      <div class="page-heading">
+        <div>
+          <h1>Trạng thái ca hiện tại</h1>
+          <p>Thông tin ca làm việc của bạn.</p>
+        </div>
+      </div>
+      <div class="alert alert-success" role="status" th:if="${successMessage}" th:text="${successMessage}"></div>
+      <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+      <div class="shift-layout" th:if="${currentShift != null}">
+        <section class="surface shift-main" aria-labelledby="shift-title">
+          <div class="shift-card-heading">
+            <div>
+              <h2 id="shift-title">Thông tin ca làm việc</h2>
+              <p>Trạng thái và thông tin ca của bạn.</p>
+            </div>
+            <span class="shift-badge" th:classappend="${currentShift.state == 'OPEN'} ? ' shift-badge-open' : ' shift-badge-inactive'" role="status"
+                  th:text="${currentShift.state == 'OPEN' ? 'Đang mở' : (currentShift.state == 'CLOSED' ? 'Đã đóng' : 'Chưa mở ca')}"></span>
+          </div>
+          <p class="shift-empty" th:if="${currentShift.state == 'NOT_OPEN'}">Bạn chưa mở ca làm việc.</p>
+          <dl class="shift-details" th:if="${currentShift.state == 'OPEN' or currentShift.state == 'CLOSED'}">
+            <div><dt>Mã ca</dt><dd th:text="${currentShift.shiftNo}"></dd></div>
+            <div th:if="${currentShift.state == 'OPEN'}"><dt>Nhân viên</dt><dd th:text="${currentShift.actorName}"></dd></div>
+            <div th:if="${currentShift.state == 'OPEN'}"><dt>Quầy</dt><dd th:text="${currentShift.registerName}"></dd></div>
+            <div th:if="${currentShift.state == 'OPEN'}"><dt><img th:src="@{/img/shift/clock.svg}" width="18" height="18" alt="" aria-hidden="true"> Thời gian mở ca</dt><dd th:text="${currentShift.openedAt}"></dd></div>
+            <div th:if="${currentShift.state == 'OPEN'}"><dt>Tiền đầu ca</dt><dd th:text="|${#numbers.formatDecimal(currentShift.openingCash, 1, 'POINT', 2, 'COMMA')} đ|"></dd></div>
+            <div th:if="${currentShift.state == 'CLOSED'}"><dt>Thời gian đóng ca</dt><dd th:text="${currentShift.closedAt}"></dd></div>
+          </dl>
+        </section>
+        <aside class="surface shift-action" aria-labelledby="shift-action-title">
+          <h2 id="shift-action-title">Thao tác</h2>
+          <p th:if="${currentShift.state == 'NOT_OPEN'}">Mở ca để bắt đầu làm việc.</p>
+          <p th:if="${currentShift.state == 'OPEN'}"><img th:src="@{/img/shift/shield-check.svg}" width="18" height="18" alt="" aria-hidden="true"> Ca đang mở. Bạn có thể tiếp tục bán hàng.</p>
+          <p th:if="${currentShift.state == 'CLOSED'}">Ca đã đóng. Mở ca mới để tiếp tục làm việc.</p>
+          <a class="btn btn-dark" th:if="${currentShift.state == 'NOT_OPEN'}" th:href="@{/shifts/new}">Mở ca</a>
+          <a class="btn btn-dark" th:if="${currentShift.state == 'OPEN'}" th:href="@{/sale}">Tiếp tục bán hàng</a>
+          <a class="btn btn-dark" th:if="${currentShift.state == 'CLOSED'}" th:href="@{/shifts/new}">Mở ca mới</a>
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+

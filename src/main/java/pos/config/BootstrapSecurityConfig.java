@@ -15,8 +15,9 @@ public class BootstrapSecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/css/**", "/js/**", "/webjars/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
                 .requestMatchers("/products", "/products/**").hasAuthority("PRODUCT_MANAGE")
+                .requestMatchers("/shifts/current").hasAuthority("SHIFT_VIEW")
                 .anyRequest().denyAll());
         return http.build();
     }

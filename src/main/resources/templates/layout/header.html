@@ -4,7 +4,7 @@
   <header class="app-header" th:fragment="header">
     <a class="brand" th:href="@{/products}" aria-label="POS — Quản lý sản phẩm">POS</a>
     <span class="header-divider" aria-hidden="true"></span>
-    <span>Quản lý sản phẩm</span>
+    <span th:text="${sectionTitle ?: 'Quản lý sản phẩm'}">Quản lý sản phẩm</span>
     <span class="actor-name" th:text="${actorName}"></span>
   </header>
 </body>

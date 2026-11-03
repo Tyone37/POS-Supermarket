@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pos.dto.AddItemRequest;
+import pos.dto.ChangeQuantityRequest;
 import pos.exception.FormValidationException;
 import pos.service.CurrentActorService;
 import pos.service.SaleService;
@@ -83,6 +85,35 @@ public class SaleController {
         }
         model.addAttribute("inputCode", request.code());
         return view(id, model, redirect);
+    }
+
+    @PostMapping("/orders/{id}/items/{lineId}/quantity")
+    public String changeQuantity(@PathVariable Long id, @PathVariable Long lineId,
+            @Valid @ModelAttribute ChangeQuantityRequest request, BindingResult errors,
+            Model model, RedirectAttributes redirect) {
+        if (errors.hasErrors()) {
+            model.addAttribute("errorMessage", errors.getAllErrors().getFirst().getDefaultMessage());
+        } else {
+            try {
+                sales.changeQuantity(id, lineId, request);
+                return "redirect:/sale/orders/" + id;
+            } catch (FormValidationException exception) {
+                model.addAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
+            }
+        }
+        return view(id, model, redirect);
+    }
+
+    @PostMapping("/orders/{id}/items/{lineId}/remove")
+    public String remove(@PathVariable Long id, @PathVariable Long lineId,
+            @RequestParam(defaultValue = "false") boolean confirmed, Model model, RedirectAttributes redirect) {
+        try {
+            sales.removeLine(id, lineId, confirmed);
+            return "redirect:/sale/orders/" + id;
+        } catch (FormValidationException exception) {
+            model.addAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
+            return view(id, model, redirect);
+        }
     }
 
     private String shiftRequired(FormValidationException exception, RedirectAttributes redirect) {

@@ -25,3 +25,10 @@
 .sale-code-input img { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
 .sale-code-input .form-control { padding-left: 38px; }
 .sale-add .btn img { vertical-align: -4px; }
+
+.sale-quantity { display: flex; align-items: center; gap: 4px; }
+.sale-quantity .form-control { width: 90px; min-width: 70px; text-align: center; }
+.sale-quantity .btn { white-space: nowrap; }
+#remove-dialog { max-width: 420px; border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
+#remove-dialog::backdrop { background: #0008; }
+#remove-dialog .form-actions { margin-top: 24px; }

@@ -7,6 +7,7 @@
   <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
   <link rel="stylesheet" th:href="@{/css/product.css}">
   <link rel="stylesheet" th:href="@{/css/sale.css}">
+  <script defer th:src="@{/js/sale/cart-form.js}"></script>
 </head>
 <body>
   <header th:replace="~{layout/header :: header}"></header>
@@ -38,17 +39,26 @@
         <a class="btn btn-outline-secondary mb-3" th:href="@{/sale/orders/{id}/products(id=${sale.id})}">Tìm sản phẩm</a>
         <div class="table-responsive">
           <table class="table align-middle mb-0">
-            <thead><tr><th scope="col">Sản phẩm</th><th scope="col">Đơn vị</th><th scope="col" class="text-end">Số lượng</th><th scope="col" class="text-end">Đơn giá (đ)</th><th scope="col" class="text-end">Giảm giá (đ)</th><th scope="col" class="text-end">Thành tiền (đ)</th></tr></thead>
+            <thead><tr><th scope="col">Sản phẩm</th><th scope="col">Đơn vị</th><th scope="col" class="text-end">Số lượng</th><th scope="col" class="text-end">Đơn giá (đ)</th><th scope="col" class="text-end">Giảm giá (đ)</th><th scope="col" class="text-end">Thành tiền (đ)</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>
               <tr th:each="line : ${sale.lines}">
                 <td><strong th:text="${line.productName}"></strong><br><span class="sale-code" th:text="${line.productCode}"></span></td>
                 <td th:text="${line.unitCode}"></td>
-                <td class="text-end" th:text="${line.quantity.stripTrailingZeros().toPlainString()}"></td>
+                <td>
+                  <form class="sale-quantity" method="post" data-quantity-form th:attr="data-remove-form=|remove-${line.id}|" th:action="@{/sale/orders/{orderId}/items/{lineId}/quantity(orderId=${sale.id},lineId=${line.id})}">
+                    <label class="visually-hidden" th:for="|quantity-${line.id}|" th:text="|Số lượng ${line.productName}|"></label>
+                    <button type="button" class="btn btn-outline-secondary" data-step="-1" th:attr="aria-label=|Giảm số lượng ${line.productName}|"><span aria-hidden="true">−</span></button>
+                    <input class="form-control" type="text" inputmode="decimal" name="quantity" required th:id="|quantity-${line.id}|" th:value="${line.quantity.toPlainString()}" th:attr="data-original-value=${line.quantity.toPlainString()}">
+                    <button type="button" class="btn btn-outline-secondary" data-step="1" th:attr="aria-label=|Tăng số lượng ${line.productName}|"><span aria-hidden="true">+</span></button>
+                    <button type="submit" class="btn btn-outline-secondary" th:attr="aria-label=|Cập nhật số lượng ${line.productName}|">Cập nhật</button>
+                  </form>
+                </td>
                 <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 'POINT', 2, 'COMMA')}"></td>
                 <td class="text-end" th:text="${#numbers.formatDecimal(line.discountAmount, 1, 'POINT', 2, 'COMMA')}"></td>
                 <td class="text-end" th:text="${#numbers.formatDecimal(line.lineTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td><form method="post" th:id="|remove-${line.id}|" th:action="@{/sale/orders/{orderId}/items/{lineId}/remove(orderId=${sale.id},lineId=${line.id})}"><input type="hidden" name="confirmed" value="true"><button type="button" class="btn btn-outline-secondary" th:attr="data-remove=|remove-${line.id}|,aria-label=|Xóa ${line.productName}|">Xóa</button></form></td>
               </tr>
-              <tr th:if="${#lists.isEmpty(sale.lines)}"><td colspan="6" class="empty-list">Chưa có sản phẩm trong đơn.</td></tr>
+              <tr th:if="${#lists.isEmpty(sale.lines)}"><td colspan="7" class="empty-list">Chưa có sản phẩm trong đơn.</td></tr>
             </tbody>
           </table>
         </div>
@@ -62,7 +72,16 @@
         </dl>
       </aside>
     </div>
+    <dialog id="remove-dialog" aria-labelledby="remove-dialog-title">
+      <h2 id="remove-dialog-title">Xóa sản phẩm?</h2>
+      <p>Bạn có chắc muốn xóa sản phẩm khỏi đơn hàng?</p>
+      <div class="form-actions">
+        <button class="btn btn-outline-secondary" type="button" data-remove-cancel>Hủy</button>
+        <button class="btn btn-dark" type="button" data-remove-confirm>Xác nhận xóa</button>
+      </div>
+    </dialog>
   </main>
 </body>
 </html>
+
 

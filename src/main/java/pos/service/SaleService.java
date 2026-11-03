@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import pos.dto.AddItemRequest;
 import pos.dto.CurrentActor;
+import pos.dto.ChangeQuantityRequest;
 import pos.dto.SaleLineView;
 import pos.dto.SaleView;
 import pos.entity.Order;
@@ -125,6 +126,74 @@ public class SaleService {
         addProduct(order, productId);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void changeQuantity(Long orderId, Long lineId, ChangeQuantityRequest request) {
+        if (request == null) {
+            throw new FormValidationException(Map.of("", "Yêu cầu không hợp lệ."));
+        }
+        Map<String, String> errors = new LinkedHashMap<>();
+        validator.validate(request).forEach(violation ->
+                errors.putIfAbsent(violation.getPropertyPath().toString(), violation.getMessage()));
+        if (!errors.isEmpty()) {
+            throw new FormValidationException(errors);
+        }
+        Order order = lockedOrder(orderId);
+        OrderItem item = ownedLine(order, lineId);
+        if (item.getPromotionId() != null || item.getDiscountAmount().signum() != 0) {
+            throw new FormValidationException(Map.of("quantity", "Không thể đổi lượng dòng có khuyến mãi."));
+        }
+        Product product = products.findLockedById(item.getProduct().getId())
+                .filter(value -> value.getStatus() == ProductStatus.ACTIVE)
+                .orElseThrow(() -> new FormValidationException(Map.of("quantity", "Sản phẩm không khả dụng.")));
+        BigDecimal quantity = request.quantity();
+        if (quantity.compareTo(BigDecimal.ONE) < 0 || quantity.compareTo(MAX_QUANTITY) > 0
+                || quantity.stripTrailingZeros().scale() > product.getUnit().getQuantityScale()) {
+            throw new FormValidationException(Map.of("quantity", "Số lượng không hợp lệ."));
+        }
+        if (quantity.compareTo(product.getStockQuantity().subtract(product.getReservedQuantity())) > 0) {
+            throw new FormValidationException(Map.of("quantity", "Số lượng vượt tồn khả dụng."));
+        }
+        item.changeQuantity(quantity);
+        if (item.getLineTotal().compareTo(new BigDecimal("9999999999999999.99")) > 0) {
+            throw new FormValidationException(Map.of("quantity", "Tổng tiền vượt giới hạn cho phép."));
+        }
+        items.saveAndFlush(item);
+        recalculate(order, "quantity");
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void removeLine(Long orderId, Long lineId, boolean confirmed) {
+        if (!confirmed) {
+            throw new FormValidationException(Map.of("", "Vui lòng xác nhận xóa dòng hàng."));
+        }
+        Order order = lockedOrder(orderId);
+        OrderItem item = ownedLine(order, lineId);
+        items.delete(item);
+        items.flush();
+        recalculate(order, "");
+    }
+
+    private Order lockedOrder(Long orderId) {
+        Shift shift = lockedShift(actors.requireEmployee());
+        return orders.findLockedById(orderId).filter(value -> value.getStatus() == OrderStatus.DRAFT
+                && value.getShift().getId().equals(shift.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private OrderItem ownedLine(Order order, Long lineId) {
+        return items.findById(lineId).filter(value -> value.getOrder().getId().equals(order.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private void recalculate(Order order, String field) {
+        order.recalculate(items.findByOrderIdOrderByIdAsc(order.getId()));
+        if (order.getSubtotalAmount().compareTo(new BigDecimal("9999999999999999.99")) > 0
+                || order.getTotalAmount().compareTo(new BigDecimal("9999999999999999.99")) > 0) {
+            throw new FormValidationException(Map.of(field, "Tổng tiền vượt giới hạn cho phép."));
+        }
+        orders.saveAndFlush(order);
+    }
+
     private void addProduct(Order order, Long productId) {
         Product product = products.findLockedById(productId)
                 .filter(value -> value.getStatus() == ProductStatus.ACTIVE)
@@ -150,12 +219,7 @@ public class SaleService {
             throw new FormValidationException(Map.of("code", "Tổng tiền vượt giới hạn cho phép."));
         }
         items.saveAndFlush(item);
-        order.recalculate(items.findByOrderIdOrderByIdAsc(order.getId()));
-        if (order.getSubtotalAmount().compareTo(new BigDecimal("9999999999999999.99")) > 0
-                || order.getTotalAmount().compareTo(new BigDecimal("9999999999999999.99")) > 0) {
-            throw new FormValidationException(Map.of("code", "Tổng tiền vượt giới hạn cho phép."));
-        }
-        orders.saveAndFlush(order);
+        recalculate(order, "code");
     }
 
     private Shift currentShift(CurrentActor actor) {

@@ -26,10 +26,9 @@
         <span class="muted" style="font-size: 11px;">MÃ ĐƠN HÀNG</span>
         <h2 style="margin: 2px 0 0;" th:text="${order.order_no}">Đơn hàng</h2>
       </div>
-      <span th:class="'badge ' + (${order.status == 'DRAFT'} ? 'neutral' : (${order.status == 'PAID'} ? 'success' : 'danger'))"
-            th:text="${order.status == 'DRAFT' ? 'Chờ thanh toán' : (${order.status == 'PAID' ? 'Đã thanh toán' : 'Đã hủy'})}">
-        Trạng thái
-      </span>
+      <span th:if="${order.status == 'DRAFT'}" class="badge neutral">Chưa thanh toán / Chờ thu ngân</span>
+      <span th:if="${order.status == 'PAID'}" class="badge success">Đã thanh toán</span>
+      <span th:if="${order.status != 'DRAFT' and order.status != 'PAID'}" class="badge danger" th:text="'Trạng thái: ' + ${order.status}">Trạng thái</span>
     </div>
 
     <div class="total" style="margin-top: 16px;">

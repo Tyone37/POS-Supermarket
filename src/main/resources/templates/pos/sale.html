@@ -84,10 +84,9 @@
     <section class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h2>Chi tiết đơn hàng</h2>
-        <span th:class="'badge ' + (${order.status == 'PAID'} ? 'success' : (${order.status == 'DRAFT'} ? 'neutral' : 'danger'))"
-              th:text="${order.status == 'PAID' ? 'Đã thanh toán' : (order.status == 'DRAFT' ? 'Đang lập đơn' : 'Đã hủy')}">
-          Trạng thái
-        </span>
+        <span th:if="${order.status == 'DRAFT'}" class="badge neutral">Đang lập đơn</span>
+        <span th:if="${order.status == 'PAID'}" class="badge success">Đã thanh toán</span>
+        <span th:if="${order.status == 'CANCELLED'}" class="badge danger">Đã hủy</span>
       </div>
 
       <div class="table-wrap">

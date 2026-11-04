@@ -20,8 +20,8 @@
   </nav>
   <div class="header-user-section">
     <div class="user-pill">
-      <span class="avatar" th:text="${#strings.substring(username,0,1).toUpperCase()}">U</span>
-      <span class="user-name" th:text="${username}">Nhân viên</span>
+      <span class="avatar" th:text="${username != null and !#strings.isEmpty(username) ? #strings.substring(username,0,1).toUpperCase() : 'U'}">U</span>
+      <span class="user-name" th:text="${username ?: 'Nhân viên'}">Nhân viên</span>
     </div>
     <form class="logout-form" th:action="@{/logout}" method="post">
       <button class="btn-logout" type="submit" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>

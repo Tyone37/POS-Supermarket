@@ -44,10 +44,10 @@
             <td><strong th:text="${order.order_no}">BH-001</strong></td>
             <td th:text="${@posTime.format(order.created_at)}" class="muted">01/01/2026 10:00</td>
             <td>
-              <span th:class="'badge ' + (${order.status == 'PAID'} ? 'success' : (${order.status == 'DRAFT'} ? 'neutral' : (${order.status == 'CANCELLED'} ? 'danger' : 'warning')))"
-                    th:text="${order.status == 'DRAFT' ? 'Đang lập' : (order.status == 'PAID' ? 'Đã thanh toán' : (order.status == 'CANCELLED' ? 'Đã hủy' : 'Chờ xác nhận'))}">
-                Trạng thái
-              </span>
+              <span th:if="${order.status == 'DRAFT'}" class="badge neutral">Đang lập</span>
+              <span th:if="${order.status == 'PAID'}" class="badge success">Đã thanh toán</span>
+              <span th:if="${order.status == 'CANCELLED'}" class="badge danger">Đã hủy</span>
+              <span th:if="${order.status != 'DRAFT' and order.status != 'PAID' and order.status != 'CANCELLED'}" class="badge warning">Chờ xác nhận</span>
             </td>
             <td class="number" style="font-size: 13px; color: var(--primary);" th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</td>
             <td style="text-align: right;">

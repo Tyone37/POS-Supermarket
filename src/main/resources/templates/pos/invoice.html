@@ -1,17 +1,87 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/pos :: head('Chi tiết hóa đơn')}"></head><body>
-<header th:replace="~{layout/pos :: header}"></header><main class="narrow">
-  <div class="page-title"><div><p class="eyebrow">Giao dịch đã hoàn tất</p><h1>Chi tiết hóa đơn</h1></div><a class="button secondary" th:href="@{/}">Về trang chính</a></div>
-  <section class="card"><h2 th:text="${invoice.invoice_no}"></h2><span class="badge">Đã thanh toán</span>
-    <dl><dt>Thời gian</dt><dd th:text="${@posTime.format(invoice.issued_at)}"></dd><dt>Nhân viên bán hàng</dt><dd th:text="${invoice.cashier_name}"></dd><dt>Phương thức</dt><dd th:text="${invoice.method == 'CASH' ? 'Tiền mặt' : 'Chuyển khoản QR'}"></dd><dt>Trạng thái hóa đơn</dt><dd th:text="${invoice.status == 'ISSUED' ? 'Đã phát hành' : 'Đã vô hiệu'}"></dd>
-      <dt th:if="${invoice.bank_reference != null}">Mã tham chiếu</dt><dd th:if="${invoice.bank_reference != null}" th:text="${invoice.bank_reference}"></dd>
-      <dt>Xác nhận lúc</dt><dd th:text="${@posTime.format(invoice.confirmed_at)}"></dd>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Chi tiết hóa đơn')}"></head>
+<body>
+<header th:replace="~{layout/pos :: header}"></header>
+
+<main class="narrow">
+  <div class="page-title no-print">
+    <div>
+      <p class="eyebrow">HÓA ĐƠN BÁN HÀNG · HOÀN TẤT</p>
+      <h1>Chi tiết hóa đơn</h1>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button type="button" class="button secondary" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        In hóa đơn
+      </button>
+      <a class="button" th:href="@{/sales}">Bán đơn mới</a>
+    </div>
+  </div>
+
+  <div class="receipt-paper">
+    <div class="receipt-header">
+      <h2>POS Supermarket</h2>
+      <p class="muted" style="font-size: 11px;">HỆ THỐNG BÁN HÀNG TẠI QUẦY SIÊU THỊ</p>
+      <h3 style="font-size: 15px; margin: 12px 0 2px;" th:text="${invoice.invoice_no}">HÓA ĐƠN</h3>
+      <span class="badge success" style="margin-top: 6px;">Đã thanh toán</span>
+    </div>
+
+    <dl class="spaced" style="font-size: 11px; margin-bottom: 16px;">
+      <dt>Thời gian phát hành:</dt>
+      <dd th:text="${@posTime.format(invoice.issued_at)}">01/01/2026 10:00</dd>
+      <dt>Thu ngân thực hiện:</dt>
+      <dd><strong th:text="${invoice.cashier_name}">Thu ngân 1</strong></dd>
+      <dt>Phương thức:</dt>
+      <dd th:text="${invoice.method == 'CASH' ? 'Tiền mặt' : 'Chuyển khoản QR'}">Tiền mặt</dd>
+      <dt th:if="${invoice.bank_reference != null}">Mã GD ngân hàng:</dt>
+      <dd th:if="${invoice.bank_reference != null}" th:text="${invoice.bank_reference}"></dd>
+      <dt>Trạng thái hóa đơn:</dt>
+      <dd th:text="${invoice.status == 'ISSUED' ? 'Đã phát hành hợp lệ' : 'Đã vô hiệu'}">Hợp lệ</dd>
     </dl>
-    <div class="table-wrap"><table><thead><tr><th>Sản phẩm</th><th class="number">SL</th><th class="number">Đơn giá</th><th class="number">Thành tiền</th></tr></thead><tbody>
-      <tr th:each="item : ${invoice.items}"><td><strong th:text="${item.product_name_snapshot}"></strong><small th:text="${item.product_code_snapshot}"></small></td><td class="number" th:text="${item.quantity}"></td><td class="number" th:text="${#numbers.formatDecimal(item.unit_price,1,'POINT',0,'COMMA')}"></td><td class="number" th:text="${#numbers.formatDecimal(item.line_total,1,'POINT',0,'COMMA')}"></td></tr>
-    </tbody></table></div>
-    <dl class="spaced"><dt>Tạm tính</dt><dd class="number" th:text="${#numbers.formatDecimal(invoice.subtotal_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd><dt>Giảm giá</dt><dd class="number" th:text="${#numbers.formatDecimal(invoice.discount_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd><dt>Tiền khách đã thanh toán</dt><dd class="number" th:text="${#numbers.formatDecimal(invoice.total_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd><dt>Tiền nhận</dt><dd class="number" th:text="${#numbers.formatDecimal(invoice.amount_received,1,'POINT',0,'COMMA')} + ' đ'"></dd><dt>Tiền thừa</dt><dd class="number" th:text="${#numbers.formatDecimal(invoice.change_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd></dl>
-    <div class="total"><span>Tổng thanh toán</span><strong th:text="${#numbers.formatDecimal(invoice.total_amount,1,'POINT',0,'COMMA')} + ' đ'"></strong></div>
-    <p class="muted">Thông tin sản phẩm và giá được lưu tại thời điểm bán.</p>
-  </section>
-</main></body></html>
+
+    <div class="table-wrap" style="margin-bottom: 14px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Mặt hàng</th>
+            <th class="number">SL</th>
+            <th class="number">Đơn giá</th>
+            <th class="number">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="item : ${invoice.items}">
+            <td>
+              <strong th:text="${item.product_name_snapshot}">Sữa tươi</strong>
+              <small style="display: block; color: var(--muted);" th:text="${item.product_code_snapshot}">SP01</small>
+            </td>
+            <td class="number" th:text="${item.quantity}">1</td>
+            <td class="number" th:text="${#numbers.formatDecimal(item.unit_price,1,'POINT',0,'COMMA')}">32.000</td>
+            <td class="number" th:text="${#numbers.formatDecimal(item.line_total,1,'POINT',0,'COMMA')}">32.000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <dl class="spaced" style="border-top: 1px dashed var(--line-strong); padding-top: 12px;">
+      <dt>Cộng tiền hàng:</dt>
+      <dd class="number" th:text="${#numbers.formatDecimal(invoice.subtotal_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</dd>
+      <dt>Giảm giá chiết khấu:</dt>
+      <dd class="number" style="color: var(--success);" th:text="'- ' + ${#numbers.formatDecimal(invoice.discount_amount,1,'POINT',0,'COMMA')} + ' đ'">- 0 đ</dd>
+      <dt><strong>TỔNG THANH TOÁN:</strong></dt>
+      <dd class="number"><strong style="font-size: 15px; color: var(--primary);" th:text="${#numbers.formatDecimal(invoice.total_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</strong></dd>
+      <dt>Tiền khách đưa:</dt>
+      <dd class="number" th:text="${#numbers.formatDecimal(invoice.amount_received,1,'POINT',0,'COMMA')} + ' đ'">0 đ</dd>
+      <dt>Tiền thừa trả khách:</dt>
+      <dd class="number" style="color: var(--primary); font-weight: 700;" th:text="${#numbers.formatDecimal(invoice.change_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</dd>
+    </dl>
+
+    <div class="receipt-footer">
+      <p style="margin: 0 0 4px; font-weight: 600;">Cảm ơn Quý khách & Hẹn gặp lại!</p>
+      <p style="margin: 0;">Thông tin và giá bán được bảo lưu nguyên trạng tại thời điểm phát hành.</p>
+    </div>
+  </div>
+</main>
+</body>
+</html>

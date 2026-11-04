@@ -1,5 +1,26 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/pos :: head('Kiểm tra dữ liệu')}"></head><body><main class="narrow"><section class="card">
-  <h1>Chưa thể thực hiện thao tác</h1><p class="error" role="alert" th:text="${error}"></p>
-  <p>Dùng nút Quay lại của trình duyệt để sửa thông tin hoặc trở về trang chính.</p><a class="button" th:href="@{/}">Về trang chính</a>
-</section></main></body></html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Kiểm tra dữ liệu')}"></head>
+<body>
+<header th:replace="~{layout/pos :: header}"></header>
+
+<main class="narrow">
+  <section class="card" style="padding: 36px; text-align: center;">
+    <div style="width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: var(--warning-bg); color: var(--warning); display: grid; place-items: center;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+
+    <h1 style="font-size: 22px;">Chưa thể thực hiện thao tác</h1>
+    <div class="error" role="alert" style="margin: 20px auto; max-width: 500px; text-align: left;" th:text="${error}">
+      Có lỗi phát sinh trong quá trình xử lý yêu cầu.
+    </div>
+
+    <p class="muted" style="margin-bottom: 24px;">Bạn có thể dùng nút Quay lại của trình duyệt để kiểm tra lại dữ liệu hoặc trở về trang chính.</p>
+    
+    <div>
+      <a class="button" th:href="@{/}">Về trang chủ</a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

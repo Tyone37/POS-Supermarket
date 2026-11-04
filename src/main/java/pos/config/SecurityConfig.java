@@ -39,7 +39,7 @@ public class SecurityConfig {
             throws Exception {
         http.authenticationProvider(provider)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/assets/**", "/demo/**", "/error").permitAll()
                         .requestMatchers("/workspace/cashier").hasRole("CASHIER")
                         .requestMatchers("/workspace/manager").hasRole("MANAGER")
                         .requestMatchers("/workspace/admin").hasRole("ADMIN")

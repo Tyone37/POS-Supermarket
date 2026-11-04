@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Bán hàng tại quầy')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header><main>
+  <div class="page-title"><div><p class="eyebrow" th:text="${shift.register_name} + ' · Ca đang mở'"></p><h1>Bán hàng tại quầy</h1><p class="muted">Tạo đơn mới hoặc tiếp tục một đơn đang lập.</p></div>
+    <form th:action="@{/sales}" method="post"><input type="hidden" name="requestKey" th:value="${requestKey}"><button type="submit">+ Tạo đơn hàng</button></form>
+  </div><div th:replace="~{layout/pos :: feedback}"></div>
+  <section class="card"><h2>Đơn hàng gần đây của bạn</h2><div class="table-wrap"><table><thead><tr><th>Mã đơn</th><th>Thời gian</th><th>Trạng thái</th><th class="number">Tổng tiền</th><th></th></tr></thead><tbody>
+    <tr th:each="order : ${orders}"><td th:text="${order.order_no}"></td><td th:text="${@posTime.format(order.created_at)}"></td><td><span class="badge" th:text="${order.status == 'DRAFT' ? 'Đang lập' : (order.status == 'PAID' ? 'Đã thanh toán' : (order.status == 'CANCELLED' ? 'Đã hủy' : 'Chờ xác nhận'))}"></span></td><td class="number" th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'"></td><td><a th:href="@{/sales/{id}(id=${order.id})}">Mở đơn</a></td></tr>
+    <tr th:if="${#lists.isEmpty(orders)}"><td colspan="5">Chưa có đơn hàng. Chọn Tạo đơn hàng để bắt đầu.</td></tr>
+  </tbody></table></div></section>
+</main></body></html>

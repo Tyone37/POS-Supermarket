@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Ca làm việc')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header>
+<main class="narrow">
+  <div class="page-title"><div><p class="eyebrow">Không gian thu ngân</p><h1>Ca làm việc</h1><p class="muted">Kiểm tra ca và chuẩn bị tiền đầu ca trước khi bán hàng.</p></div></div>
+  <div th:replace="~{layout/pos :: feedback}"></div>
+  <section class="card" th:if="${shift != null and shift.status == 'OPEN'}">
+    <h2>Đang mở</h2>
+    <dl><dt>Mã ca</dt><dd th:text="${shift.shift_no}"></dd><dt>Quầy</dt><dd th:text="${shift.register_name}"></dd>
+      <dt>Giờ mở</dt><dd th:text="${@posTime.format(shift.opened_at)}"></dd><dt>Tiền đầu ca</dt><dd th:text="${#numbers.formatDecimal(shift.opening_cash,1,'POINT',0,'COMMA')} + ' đ'"></dd></dl>
+    <a class="button spaced" th:href="@{/sales}">Tiếp tục bán hàng</a>
+  </section>
+  <section class="card" th:if="${shift == null or shift.status != 'OPEN'}">
+    <h2 th:text="${shift == null ? 'Chưa mở ca' : 'Đã kết thúc'}"></h2>
+    <p th:if="${shift != null}" class="muted">Ca trước đã kết thúc. Hãy mở ca mới để tiếp tục giao dịch.</p>
+    <form th:action="@{/shifts}" method="post" class="grid-form">
+      <input type="hidden" name="openRequestKey" th:value="${requestKey}">
+      <div class="field"><label for="registerId">Quầy bán hàng *</label><select id="registerId" name="registerId" required>
+        <option value="">Chọn quầy</option><option th:each="register : ${registers}" th:value="${register.id}" th:text="${register.name}"></option>
+      </select></div>
+      <div class="field"><label for="openingCash">Tiền đầu ca (đ) *</label><input id="openingCash" name="openingCash" type="number" min="0" step="1" max="9999999999999999" th:value="${openingCash}" required></div>
+      <div class="wide"><button type="submit" th:text="${shift == null ? 'Mở ca' : 'Mở ca mới'}"></button></div>
+    </form>
+    <p th:if="${#lists.isEmpty(registers)}" class="error">Chưa có quầy hoạt động. Cần chuẩn bị danh mục quầy trước khi mở ca.</p>
+  </section>
+</main></body></html>

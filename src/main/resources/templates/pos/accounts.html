@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Quản trị tài khoản')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header><main>
+  <div class="page-title"><div><p class="eyebrow">Quản trị hệ thống</p><h1>Tài khoản người dùng</h1><p class="muted">Tạo tài khoản, gán vai trò và khóa quyền truy cập.</p></div></div>
+  <div th:replace="~{layout/pos :: feedback}"></div><div class="columns">
+    <section class="card"><h2>Danh sách tài khoản</h2><div class="table-wrap"><table><thead><tr><th>Nhân viên</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+      <tr th:each="account : ${accounts}"><td><strong th:text="${account.full_name}"></strong><small th:text="${account.username}"></small></td><td th:text="${account.role_code}"></td><td><span class="badge" th:text="${account.status == 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}"></span></td><td><a th:if="${account.status == 'ACTIVE' and account.username != username}" th:href="@{/accounts/{id}/lock(id=${account.id})}">Khóa tài khoản</a></td></tr>
+    </tbody></table></div></section>
+    <section class="card"><h2>Tạo tài khoản</h2><form th:action="@{/accounts}" method="post" class="grid-form">
+      <div class="field wide"><label for="fullName">Họ tên *</label><input id="fullName" name="fullName" maxlength="200" th:value="${form?.fullName}" required></div>
+      <div class="field wide"><label for="username">Tên đăng nhập *</label><input id="username" name="username" minlength="3" maxlength="100" pattern="[a-zA-Z0-9._-]{3,100}" autocomplete="off" th:value="${form?.username}" required></div>
+      <div class="field wide"><label for="password">Mật khẩu ban đầu *</label><input id="password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><small class="muted">Ít nhất 8 ký tự; tối đa 72 byte UTF-8.</small></div>
+      <div class="field wide"><label for="roleCode">Vai trò *</label><select id="roleCode" name="roleCode" required><option value="">Chọn vai trò</option><option th:each="role : ${roles}" th:value="${role.code}" th:text="${role.name}" th:selected="${form?.roleCode == role.code}"></option></select></div>
+      <div class="wide"><button type="submit">Tạo tài khoản</button></div>
+    </form></section>
+  </div>
+</main></body></html>

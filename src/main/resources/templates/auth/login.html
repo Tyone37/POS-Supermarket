@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập | POS Supermarket</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+  <header>POS Supermarket <span>Hệ thống bán hàng tại quầy</span></header>
+  <main>
+    <p>US-DN-01 / ĐĂNG NHẬP</p>
+    <h1>Đăng nhập vào hệ thống</h1>
+    <p>Sử dụng tài khoản được cấp để truy cập đúng không gian làm việc theo vai trò.</p>
+    <p th:if="${param.error != null and param.error[0] == 'locked'}" role="alert" class="error">
+      Tài khoản đã bị khóa. Không thể đăng nhập. Vui lòng liên hệ quản trị để được hỗ trợ.
+    </p>
+    <p th:if="${param.error != null and param.error[0] != 'locked'}" role="alert" class="error">
+      Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra thông tin và thử lại.
+    </p>
+    <p th:if="${param.logout != null}" role="status">Bạn đã đăng xuất khỏi hệ thống.</p>
+    <form th:action="@{/login}" method="post">
+      <label for="username">Tên đăng nhập</label>
+      <input id="username" name="username" autocomplete="username" maxlength="100" required autofocus>
+      <label for="password">Mật khẩu</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <p>Mật khẩu phân biệt chữ hoa và chữ thường.</p>
+      <button type="submit">Đăng nhập</button>
+    </form>
+    <p>Không đăng nhập được? Liên hệ quản trị để kiểm tra tài khoản hoặc đặt lại mật khẩu.</p>
+  </main>
+</body>
+</html>

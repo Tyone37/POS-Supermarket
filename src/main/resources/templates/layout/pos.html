@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title th:text="${title} + ' | POS Supermarket'">POS Supermarket</title>
+  <link rel="stylesheet" th:href="@{/css/pos.css}">
+</head>
+<body>
+<header th:fragment="header">
+  <a class="brand" th:href="@{/}">POS <span>Supermarket</span></a>
+  <nav aria-label="Điều hướng chính">
+    <a th:if="${canCashier}" th:href="@{/shifts}">Ca làm việc</a>
+    <a th:if="${canCashier}" th:href="@{/sales}">Bán hàng</a>
+    <a th:if="${canManager}" th:href="@{/products}">Sản phẩm</a>
+    <a th:if="${canAdmin}" th:href="@{/accounts}">Tài khoản</a>
+  </nav>
+  <span class="user" th:text="${username}">Nhân viên</span>
+  <form th:action="@{/logout}" method="post"><button class="secondary" type="submit">Đăng xuất</button></form>
+</header>
+<div th:fragment="feedback">
+  <p th:if="${message}" class="notice" role="status" th:text="${message}"></p>
+  <p th:if="${error}" class="error" role="alert" th:text="${error}"></p>
+</div>
+</body></html>

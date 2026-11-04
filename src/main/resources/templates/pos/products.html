@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Quản lý sản phẩm')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header><main>
+  <div class="page-title"><div><p class="eyebrow">Danh mục cửa hàng</p><h1>Quản lý sản phẩm</h1><p class="muted">Thêm sản phẩm để bán ngay tại quầy.</p></div></div>
+  <div th:replace="~{layout/pos :: feedback}"></div>
+  <div class="columns">
+    <section class="card"><h2>Danh sách sản phẩm</h2>
+      <form th:action="@{/products}" method="get" class="inline-form"><label for="q">Tìm sản phẩm</label><input id="q" name="q" th:value="${q}" placeholder="Tên, SKU hoặc mã vạch"><button type="submit">Tìm</button></form>
+      <div class="table-wrap spaced"><table><thead><tr><th>Sản phẩm</th><th>Nhóm</th><th class="number">Giá bán</th><th class="number">Tồn kho</th></tr></thead><tbody>
+        <tr th:each="product : ${products}"><td><strong th:text="${product.name}"></strong><small th:text="${product.code} + ' · ' + ${product.barcode}"></small></td><td th:text="${product.category_name}"></td><td class="number" th:text="${#numbers.formatDecimal(product.sale_price,1,'POINT',0,'COMMA')} + ' đ'"></td><td class="number" th:text="${product.stock_quantity} + ' ' + ${product.unit_name}"></td></tr>
+        <tr th:if="${#lists.isEmpty(products)}"><td colspan="4">Chưa có sản phẩm phù hợp.</td></tr>
+      </tbody></table></div>
+      <p class="muted">Hiển thị tối đa 100 kết quả. Dùng từ khóa để thu hẹp danh sách.</p>
+    </section>
+    <section class="card"><h2>Thêm sản phẩm mới</h2><form th:action="@{/products}" method="post" class="grid-form">
+      <div class="field"><label for="code">Mã SKU *</label><input id="code" name="code" maxlength="20" th:value="${form?.code}" required></div>
+      <div class="field"><label for="barcode">Mã vạch *</label><input id="barcode" name="barcode" maxlength="50" th:value="${form?.barcode}" required></div>
+      <div class="field wide"><label for="name">Tên sản phẩm *</label><input id="name" name="name" maxlength="200" th:value="${form?.name}" required></div>
+      <div class="field"><label for="categoryId">Nhóm hàng *</label><select id="categoryId" name="categoryId" required><option value="">Chọn nhóm</option><option th:each="category : ${categories}" th:value="${category.id}" th:selected="${form?.categoryId == category.id}" th:text="${category.name}"></option></select></div>
+      <div class="field"><label for="unitId">Đơn vị *</label><select id="unitId" name="unitId" required><option value="">Chọn đơn vị</option><option th:each="unit : ${units}" th:value="${unit.id}" th:selected="${form?.unitId == unit.id}" th:text="${unit.name}"></option></select></div>
+      <div class="field"><label for="price">Đơn giá (đ) *</label><input id="price" name="price" type="number" min="1" step="1" max="9999999999999999" th:value="${form?.price}" required></div>
+      <div class="field"><label for="stock">Số lượng tồn *</label><input id="stock" name="stock" type="number" min="0" step="0.001" max="999999999999.999" th:value="${form?.stock}" required></div>
+      <div class="field wide"><label for="imageUrl">Ảnh sản phẩm (URL HTTPS)</label><input id="imageUrl" name="imageUrl" type="url" maxlength="500" th:value="${form?.imageUrl}"><small class="muted">Có thể để trống để dùng ảnh mặc định.</small></div>
+      <div class="wide actions"><button type="submit">Lưu sản phẩm</button><a th:href="@{/products}">Xóa nội dung</a></div>
+    </form></section>
+  </div>
+</main></body></html>

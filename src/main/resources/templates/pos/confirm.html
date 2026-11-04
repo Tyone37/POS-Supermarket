@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Xác nhận thao tác')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header><main class="narrow"><section class="card">
+  <h1 th:text="${title}"></h1><p>Kiểm tra thông tin trước khi xác nhận.</p>
+  <form th:action="@{${action}}" method="post" class="grid-form"><input type="hidden" name="confirmed" value="true"><input th:if="${itemId != null}" type="hidden" name="itemId" th:value="${itemId}">
+    <div th:if="${cancelReason}" class="field wide"><label for="reason">Lý do hủy (không bắt buộc)</label><textarea id="reason" name="reason" maxlength="255" rows="3"></textarea></div>
+    <div class="actions wide"><button type="submit" class="danger">Xác nhận</button><a class="button secondary" th:href="@{${back}}">Quay lại</a></div>
+  </form>
+</section></main></body></html>

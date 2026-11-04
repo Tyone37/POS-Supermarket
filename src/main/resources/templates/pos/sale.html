@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Đơn hàng tại quầy')}"></head><body>
+<header th:replace="~{layout/pos :: header}"></header><main>
+  <div class="page-title"><div><p class="eyebrow">Bán hàng tại quầy</p><h1 th:text="${order.order_no}"></h1>
+    <p class="muted" th:text="${order.status == 'DRAFT' ? 'Đang lập · Quét mã hoặc chọn sản phẩm để thêm vào đơn.' : (order.status == 'PAID' ? 'Đã thanh toán · Không thể chỉnh sửa đơn.' : 'Đã hủy · Đơn được giữ để đối soát.')}"></p>
+  </div><a class="button secondary" th:href="@{/sales}">Danh sách đơn</a></div>
+  <div th:replace="~{layout/pos :: feedback}"></div>
+  <div class="columns sale-columns">
+    <section class="card" th:if="${order.status == 'DRAFT'}"><h2>Chọn sản phẩm</h2>
+      <form th:action="@{/sales/{id}/items(id=${order.id})}" method="post" class="inline-form">
+        <label for="scan">Quét / nhập mã</label><input id="scan" name="code" placeholder="Mã vạch hoặc SKU" autocomplete="off" maxlength="50" required autofocus><button type="submit">Thêm</button>
+      </form>
+      <form th:action="@{/sales/{id}(id=${order.id})}" method="get" class="grid-form spaced">
+        <div class="field"><label for="q">Tìm theo tên hoặc SKU</label><input id="q" name="q" th:value="${q}" placeholder="Ví dụ: sua tuoi"></div>
+        <div class="field"><label for="category">Nhóm hàng</label><select id="category" name="category"><option value="">Tất cả nhóm</option><option th:each="group : ${categories}" th:value="${group.id}" th:selected="${category == group.id}" th:text="${group.name}"></option></select></div>
+        <div class="wide"><button type="submit" class="secondary">Tìm sản phẩm</button></div>
+      </form>
+      <div class="product-list">
+        <article class="product" th:each="product : ${products}">
+          <img th:src="${product.image_url != null ? product.image_url : '/img/product-placeholder.svg'}" alt="Ảnh sản phẩm" loading="lazy" referrerpolicy="no-referrer">
+          <div class="description"><strong th:text="${product.name}"></strong><p class="muted" th:text="${product.code} + ' · Tồn: ' + ${product.stock_quantity}"></p><strong th:text="${#numbers.formatDecimal(product.sale_price,1,'POINT',0,'COMMA')} + ' đ'"></strong></div>
+          <form th:action="@{/sales/{id}/items(id=${order.id})}" method="post"><input type="hidden" name="code" th:value="${product.barcode}"><button type="submit" class="secondary" th:disabled="${product.stock_quantity - product.reserved_quantity &lt; 1}" th:aria-label="'Thêm ' + ${product.name}">Thêm</button></form>
+        </article>
+        <p th:if="${#lists.isEmpty(products)}" class="muted">Không tìm thấy sản phẩm phù hợp.</p>
+      </div>
+    </section>
+    <section class="card"><h2>Chi tiết đơn hàng</h2><div class="table-wrap"><table><thead><tr><th>Sản phẩm / đơn giá</th><th>Số lượng</th><th class="number">Thành tiền</th><th></th></tr></thead><tbody>
+      <tr th:each="item : ${items}"><td><strong th:text="${item.product_name_snapshot}"></strong><small th:text="${#numbers.formatDecimal(item.unit_price,1,'POINT',0,'COMMA')} + ' đ / ' + ${item.unit_code_snapshot}"></small></td>
+        <td><form th:if="${order.status == 'DRAFT'}" th:action="@{/sales/{id}/quantity(id=${order.id})}" method="post" class="quantity-form" th:data-confirm-url="@{/sales/{id}/remove/{item}(id=${order.id},item=${item.id})}">
+          <input type="hidden" name="itemId" th:value="${item.id}"><input type="number" name="quantity" min="0" step="0.001" th:value="${item.quantity}" th:aria-label="'Số lượng ' + ${item.product_name_snapshot}" required><button type="submit" class="secondary">Lưu</button></form>
+          <span th:if="${order.status != 'DRAFT'}" th:text="${item.quantity}"></span>
+        </td><td class="number" th:text="${#numbers.formatDecimal(item.line_total,1,'POINT',0,'COMMA')} + ' đ'"></td>
+        <td><a th:if="${order.status == 'DRAFT'}" th:href="@{/sales/{id}/remove/{item}(id=${order.id},item=${item.id})}" th:aria-label="'Xóa ' + ${item.product_name_snapshot}">Xóa</a></td></tr>
+      <tr th:if="${#lists.isEmpty(items)}"><td colspan="4">Đơn chưa có sản phẩm.</td></tr>
+    </tbody></table></div>
+      <dl class="spaced"><dt>Tạm tính</dt><dd class="number" th:text="${#numbers.formatDecimal(order.subtotal_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd><dt>Giảm giá</dt><dd class="number" th:text="${#numbers.formatDecimal(order.discount_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd></dl>
+      <div class="total"><span>Tổng phải trả</span><strong th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'"></strong></div>
+      <div class="actions" th:if="${order.status == 'DRAFT'}"><a class="button" th:if="${!#lists.isEmpty(items)}" th:href="@{/sales/{id}/checkout(id=${order.id})}">Thanh toán</a><a class="button danger" th:href="@{/sales/{id}/cancel(id=${order.id})}">Hủy đơn hàng</a></div>
+      <a th:if="${order.status == 'PAID'}" th:href="@{/sales/{id}/checkout(id=${order.id})}">Xem kết quả thanh toán và hóa đơn</a>
+      <p th:if="${order.status == 'CANCELLED'}" th:text="'Lý do hủy: ' + ${order.cancellation_reason}"></p>
+    </section>
+  </div>
+</main><script th:src="@{/js/pos.js}" defer></script></body></html>

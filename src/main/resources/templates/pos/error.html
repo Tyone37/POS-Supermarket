@@ -1,0 +1,5 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Kiểm tra dữ liệu')}"></head><body><main class="narrow"><section class="card">
+  <h1>Chưa thể thực hiện thao tác</h1><p class="error" role="alert" th:text="${error}"></p>
+  <p>Dùng nút Quay lại của trình duyệt để sửa thông tin hoặc trở về trang chính.</p><a class="button" th:href="@{/}">Về trang chính</a>
+</section></main></body></html>

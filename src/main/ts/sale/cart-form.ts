@@ -1,8 +1,20 @@
 const removeDialog = document.querySelector<HTMLDialogElement>('#remove-dialog');
+const cartContent = document.querySelector<HTMLElement>('main');
 let pendingRemoveForm: HTMLFormElement | null = null;
 let pendingQuantity: HTMLInputElement | null = null;
+let cartSubmitting = false;
+
+function setCartSubmitting(submitting: boolean): void {
+  cartSubmitting = submitting;
+  if (cartContent) {
+    cartContent.inert = submitting;
+  }
+}
 
 function openRemoveDialog(formId: string, input: HTMLInputElement | null): void {
+  if (cartSubmitting) {
+    return;
+  }
   const target = document.getElementById(formId);
   if (!(target instanceof HTMLFormElement) || !removeDialog) {
     return;
@@ -23,6 +35,9 @@ document.querySelectorAll<HTMLFormElement>('[data-quantity-form]').forEach((quan
   }
   quantityForm.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((button) => {
     button.addEventListener('click', () => {
+      if (cartSubmitting) {
+        return;
+      }
       const match = /^(\d+)(?:\.(\d{1,3}))?$/.exec(input.value.trim());
       if (!match) {
         return;
@@ -34,6 +49,7 @@ document.querySelectorAll<HTMLFormElement>('[data-quantity-form]').forEach((quan
       }
       const fraction = (next % 1000n).toString().padStart(3, '0').replace(/0+$/, '');
       input.value = `${next / 1000n}${fraction ? `.${fraction}` : ''}`;
+      quantityForm.requestSubmit();
     });
   });
   quantityForm.addEventListener('submit', (event) => {
@@ -43,6 +59,20 @@ document.querySelectorAll<HTMLFormElement>('[data-quantity-form]').forEach((quan
     }
   });
 });
+
+document.querySelectorAll<HTMLFormElement>('form[method="post"]').forEach((form) => {
+  form.addEventListener('submit', (event) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+    if (cartSubmitting) {
+      event.preventDefault();
+      return;
+    }
+    setCartSubmitting(true);
+  });
+});
+window.addEventListener('pageshow', () => setCartSubmitting(false));
 
 removeDialog?.querySelector<HTMLButtonElement>('[data-remove-cancel]')?.addEventListener('click', () => removeDialog.close());
 removeDialog?.querySelector<HTMLButtonElement>('[data-remove-confirm]')?.addEventListener('click', () => {

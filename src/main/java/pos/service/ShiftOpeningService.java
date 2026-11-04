@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.validation.Validator;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -37,14 +39,16 @@ public class ShiftOpeningService {
     private final RegisterRepository registers;
     private final ShiftRepository shifts;
     private final Validator validator;
+    private final EntityManager entityManager;
 
     public ShiftOpeningService(CurrentActorService actors, EmployeeRepository employees,
-            RegisterRepository registers, ShiftRepository shifts, Validator validator) {
+            RegisterRepository registers, ShiftRepository shifts, Validator validator, EntityManager entityManager) {
         this.actors = actors;
         this.employees = employees;
         this.registers = registers;
         this.shifts = shifts;
         this.validator = validator;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -67,8 +71,13 @@ public class ShiftOpeningService {
         }
         CurrentActor actor = actors.requireEmployee();
         Employee employee = employees.findLockedById(actor.employeeId())
-                .filter(value -> value.getStatus() == ReferenceStatus.ACTIVE)
                 .orElseThrow(() -> new AccessDeniedException("Không có quyền truy cập."));
+        // requireEmployee loaded this entity before the lock; reload its current state.
+        entityManager.refresh(employee, LockModeType.PESSIMISTIC_WRITE);
+        if (employee.getStatus() != ReferenceStatus.ACTIVE
+                || !employee.getAccount().getId().equals(actor.accountId())) {
+            throw new AccessDeniedException("Không có quyền truy cập.");
+        }
         Shift existing = shifts.findByOpenRequestKey(request.requestKey()).orElse(null);
         if (existing != null) {
             if (!existing.getEmployee().getId().equals(employee.getId())

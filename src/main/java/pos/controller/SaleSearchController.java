@@ -31,8 +31,14 @@ public class SaleSearchController {
 
     @GetMapping
     public String search(@PathVariable Long orderId, @RequestParam(defaultValue = "") String q,
-            @RequestParam(required = false) Long categoryId, @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("sale", sales.view(orderId));
+            @RequestParam(required = false) Long categoryId, @RequestParam(defaultValue = "0") int page,
+            Model model, RedirectAttributes redirect) {
+        try {
+            model.addAttribute("sale", sales.view(orderId));
+        } catch (FormValidationException exception) {
+            redirect.addFlashAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
+            return "redirect:/shifts/current";
+        }
         model.addAttribute("actorName", actors.requireEmployee().fullName());
         model.addAttribute("sectionTitle", "Tìm kiếm sản phẩm");
         model.addAttribute("query", q);

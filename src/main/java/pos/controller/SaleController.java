@@ -117,9 +117,13 @@ public class SaleController {
     }
 
     @GetMapping("/orders/{id}/cancel")
-    public String cancelForm(@PathVariable Long id, Model model) {
-        model.addAttribute("sale", sales.view(id));
-        return "sale/cancel";
+    public String cancelForm(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+        try {
+            model.addAttribute("sale", sales.view(id));
+            return "sale/cancel";
+        } catch (FormValidationException exception) {
+            return shiftRequired(exception, redirect);
+        }
     }
 
     @PostMapping("/orders/{id}/cancel")
@@ -131,7 +135,7 @@ public class SaleController {
             return "redirect:/sale";
         } catch (FormValidationException exception) {
             model.addAttribute("errorMessage", exception.getFieldErrors().values().iterator().next());
-            return cancelForm(id, model);
+            return cancelForm(id, model, redirect);
         }
     }
 

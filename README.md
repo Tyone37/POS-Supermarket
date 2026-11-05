@@ -33,7 +33,7 @@ Maven tự biên dịch TypeScript ở generate-resources.
 
 ```powershell
 npm.cmd ci
-mvn.cmd -B package "-Dmaven.test.skip=true"
+mvn.cmd -B verify
 if ($LASTEXITCODE -eq 0) {
     java -jar target/pos-supermarket-0.0.1-SNAPSHOT.jar
 }
@@ -57,10 +57,32 @@ Chưa có chức năng đóng ca, engine khuyến mãi hoặc hóa đơn điện
 
 ## Kiểm chứng và bàn giao
 
-Theo phân công hiện hành, Codex chỉ code/review/build; người khác viết/chạy test và nghiệm thu.
-Bộ test tự động cũ và dependency H2/JUnit/Mockito đã được bỏ theo yêu cầu người dùng.
-CI chỉ biên dịch TypeScript và đóng gói ứng dụng bằng `mvn -B package -Dmaven.test.skip=true`.
-CI xanh chỉ xác nhận build thành công; không coi là kiểm thử nghiệp vụ hoặc đã đạt AC.
+Unit test dùng JUnit 5 và Mockito qua `spring-boot-starter-test`, đặt trong `src/test/java/pos/service`.
+Bộ test cơ bản, mỗi hàm kiểm tra một tình huống, tên hàm bằng tiếng Việt không dấu để dễ đọc.
+Không dùng test tham số hóa hoặc helper dữ liệu chung. Mock repository để không cần MySQL và không sửa dữ liệu ứng dụng.
+Riêng `LoginTest` dùng AuthenticationProvider thật của ứng dụng cùng BCrypt để kiểm tra đúng/sai mật khẩu;
+không chỉ kiểm tra hàm tải thông tin tài khoản.
+
+| File | Tình huống cơ bản |
+|---|---|
+| `LoginTest` | Đúng tài khoản/mật khẩu; sai mật khẩu; tên không tồn tại; bỏ trống tên/mật khẩu; tài khoản khóa |
+| `AccountAdminServiceTest` | Tạo hợp lệ; trùng tên; mật khẩu ngắn; không được tự khóa |
+| `CatalogServiceTest` | Thêm hợp lệ; giá âm; tồn âm; tìm tên không dấu |
+| `ShiftServiceTest` | Mở ca hợp lệ; tiền âm; chưa chọn quầy; chưa có ca |
+| `SaleServiceTest` | Tiền mặt hợp lệ/tính thừa; thiếu tiền; chuyển khoản chưa xác nhận; mã sản phẩm sai; số lượng âm; xác nhận/hủy bỏ hủy đơn |
+
+
+```powershell
+mvn.cmd -B test
+# Chạy test và đóng gói, giống CI:
+mvn.cmd -B verify
+# Chỉ chạy một nhóm:
+mvn.cmd -B "-Dtest=SaleServiceTest" test
+```
+
+Kết quả chi tiết nằm trong `target/surefire-reports`. CI chạy `mvn -B verify`, không bỏ qua test.
+Unit test với mock không chứng minh transaction rollback, khóa/unique constraint hoặc tính đúng khi nhiều quầy gửi đồng thời.
+Những phần đó cần integration test trên MySQL riêng và kiểm thử giao diện/nghiệm thu AC.
 
 Bản JPA dùng JAR mặc định `target/pos-supermarket-0.0.1-SNAPSHOT.jar` và cổng 8080.
 Cổng 8081 và thư mục `target/jpa-build/` chỉ dùng trong lượt kiểm tra tách biệt trước khi thay runtime cũ.

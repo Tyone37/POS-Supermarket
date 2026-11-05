@@ -26,5 +26,5 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build application
-        run: mvn -B package -Dmaven.test.skip=true
+      - name: Run unit tests and build application
+        run: mvn -B verify

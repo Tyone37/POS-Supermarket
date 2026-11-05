@@ -78,12 +78,12 @@ public class PosRepository {
     }
 
     public Optional<Map<String, Object>> employee(long account) {
-        return one("SELECT * FROM employees WHERE account_id=:id AND status='ACTIVE'", "id", account);
+        return one("SELECT * FROM employees WHERE account_id=:id AND status='ACTIVE' FOR UPDATE", "id", account);
     }
 
     public Optional<Map<String, Object>> latestShift(long employee) {
         return one("SELECT s.*,r.name AS register_name FROM shifts s JOIN registers r ON r.id=s.register_id "
-                + "WHERE employee_id=:id ORDER BY s.id DESC LIMIT 1", "id", employee);
+                + "WHERE employee_id=:id ORDER BY CASE WHEN s.status='OPEN' THEN 0 ELSE 1 END,s.id DESC LIMIT 1", "id", employee);
     }
 
     public Optional<Map<String, Object>> shiftByKey(String key) {
@@ -115,19 +115,27 @@ public class PosRepository {
                 + "WHERE p.id=:id" + (lock ? " FOR UPDATE" : ""), "id", id);
     }
 
-    public Optional<Map<String, Object>> productByCode(String code) {
-        return one("SELECT p.*,u.code AS unit_code,u.quantity_scale FROM products p JOIN units u ON u.id=p.unit_id "
-                + "WHERE p.status='ACTIVE' AND (p.barcode=:code OR p.code=:code) ORDER BY p.id LIMIT 1", "code", code);
+    public List<Map<String, Object>> productsByCode(String code) {
+        return rows("SELECT p.*,u.code AS unit_code,u.quantity_scale FROM products p JOIN units u ON u.id=p.unit_id "
+                + "WHERE p.status='ACTIVE' AND (p.barcode=:code OR p.code=:code) ORDER BY p.id LIMIT 2", "code", code);
     }
 
     public long createProduct(String code, String barcode, String name, long category, long unit,
                               Object price, Object stock, String image, Object now) {
-        return insert("""
+        long id = insert("""
                 INSERT INTO products(code,barcode,name,category_id,unit_id,sale_price,stock_quantity,image_url,
                                      status,created_at,updated_at)
                 VALUES(:code,:barcode,:name,:category,:unit,:price,:stock,:image,'ACTIVE',:now,:now)
                 """, "code", code, "barcode", barcode, "name", name, "category", category, "unit", unit,
                 "price", price, "stock", stock, "image", image, "now", now);
+        if (((java.math.BigDecimal) stock).signum() > 0) {
+            jdbc.update("""
+                    INSERT INTO inventory_movements(event_key,product_id,product_code_snapshot,
+                      movement_type,quantity_delta,reason,created_at)
+                    VALUES(:key,:product,:code,'ADJUSTMENT',:quantity,'Tồn đầu khi tạo sản phẩm',:now)
+                    """, params("key", "INITIAL-" + id, "product", id, "code", code, "quantity", stock, "now", now));
+        }
+        return id;
     }
 
     public Optional<Map<String, Object>> order(long id, boolean lock) {
@@ -149,7 +157,8 @@ public class PosRepository {
     }
 
     public List<Map<String, Object>> items(long order) {
-        return rows("SELECT * FROM order_items WHERE order_id=:id ORDER BY product_id", "id", order);
+        return rows("SELECT i.*,u.quantity_scale FROM order_items i JOIN products p ON p.id=i.product_id "
+                + "JOIN units u ON u.id=p.unit_id WHERE i.order_id=:id ORDER BY i.product_id", "id", order);
     }
 
     public void createItem(long order, Map<String, Object> product) {
@@ -171,8 +180,9 @@ public class PosRepository {
         jdbc.update("DELETE FROM order_items WHERE id=:id", params("id", id));
     }
 
-    public void totals(long order, Object total) {
-        jdbc.update("UPDATE orders SET subtotal_amount=:total,total_amount=:total WHERE id=:id", params("id", order, "total", total));
+    public void totals(long order, Object subtotal, Object discount, Object total) {
+        jdbc.update("UPDATE orders SET subtotal_amount=:subtotal,discount_amount=:discount,total_amount=:total WHERE id=:id",
+                params("id", order, "subtotal", subtotal, "discount", discount, "total", total));
     }
 
     public void cancel(long order, String reason, Object now) {

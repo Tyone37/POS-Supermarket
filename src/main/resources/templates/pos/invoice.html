@@ -47,6 +47,7 @@
             <th>Mặt hàng</th>
             <th class="number">SL</th>
             <th class="number">Đơn giá</th>
+            <th class="number">Giảm giá</th>
             <th class="number">Thành tiền</th>
           </tr>
         </thead>
@@ -55,9 +56,11 @@
             <td>
               <strong th:text="${item.product_name_snapshot}">Sữa tươi</strong>
               <small style="display: block; color: var(--muted);" th:text="${item.product_code_snapshot}">SP01</small>
+              <small th:text="${item.unit_code_snapshot}">Đơn vị</small>
             </td>
             <td class="number" th:text="${item.quantity}">1</td>
             <td class="number" th:text="${#numbers.formatDecimal(item.unit_price,1,'POINT',0,'COMMA')}">32.000</td>
+            <td class="number" th:text="${#numbers.formatDecimal(item.discount_amount,1,'POINT',0,'COMMA')}">0</td>
             <td class="number" th:text="${#numbers.formatDecimal(item.line_total,1,'POINT',0,'COMMA')}">32.000</td>
           </tr>
         </tbody>

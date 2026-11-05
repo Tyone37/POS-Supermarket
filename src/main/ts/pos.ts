@@ -26,3 +26,34 @@ document.querySelectorAll<HTMLFormElement>(".quantity-form").forEach((form) => {
     }
   });
 });
+
+const cart = document.querySelector<HTMLElement>("main[data-cart]");
+let cartPending = false;
+cart?.addEventListener("submit", (event) => {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== "post" || event.defaultPrevented) return;
+  if (cartPending) {
+    event.preventDefault();
+    return;
+  }
+  cartPending = true;
+  cart.inert = true;
+});
+window.addEventListener("pageshow", () => {
+  cartPending = false;
+  if (cart) cart.inert = false;
+  cart?.querySelectorAll<HTMLInputElement>('input[name="quantity"]').forEach((input) => {
+    input.value = input.defaultValue;
+  });
+});
+document.querySelectorAll<HTMLButtonElement>("[data-quantity-change]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const form = button.form;
+    const quantity = form?.querySelector<HTMLInputElement>('input[name="quantity"]');
+    if (cartPending || !form || !quantity || !quantity.checkValidity()) return;
+    const steps = quantity.step === "0.001" ? 1000 : 1;
+    if (button.dataset.quantityChange === "1") quantity.stepUp(steps);
+    else quantity.stepDown(steps);
+    form.requestSubmit();
+  });
+});

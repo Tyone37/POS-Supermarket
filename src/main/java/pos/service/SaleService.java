@@ -96,8 +96,14 @@ public class SaleService {
     public void add(String username, long id, String code) {
         var order = ownedOrder(username, id);
         editable(order);
-        var found = db.productByCode(PosSupport.text(code, "Mã sản phẩm", 50))
-                .orElseThrow(() -> new BusinessException("Không tìm thấy mã sản phẩm đang bán."));
+        var matches = db.productsByCode(PosSupport.text(code, "Mã sản phẩm", 50));
+        if (matches.isEmpty()) {
+            throw new BusinessException("Không tìm thấy mã sản phẩm đang bán.");
+        }
+        if (matches.size() > 1) {
+            throw new BusinessException("Mã vạch/SKU khớp nhiều sản phẩm. Vui lòng kiểm tra danh mục.");
+        }
+        var found = matches.getFirst();
         var product = db.product(PosSupport.id(found, "id"), true).orElseThrow();
         if (!"ACTIVE".equals(product.get("status"))) {
             throw new BusinessException("Sản phẩm đã ngừng bán.");
@@ -121,6 +127,10 @@ public class SaleService {
     }
 
     private void updateQuantity(Map<String, Object> item, Map<String, Object> product, BigDecimal quantity) {
+        // shortcut: chưa có hợp đồng tính lại khuyến mãi; giữ nguyên dòng giảm giá đến khi tích hợp module đó.
+        if (item.get("promotion_id") != null || ((BigDecimal) item.get("discount_amount")).signum() != 0) {
+            throw new BusinessException("Chưa hỗ trợ đổi số lượng dòng có khuyến mãi. Có thể xóa dòng khỏi đơn.");
+        }
         available(product, quantity);
         BigDecimal total = quantity.multiply((BigDecimal) item.get("unit_price")).setScale(2, RoundingMode.HALF_UP);
         if (total.compareTo(new BigDecimal("9999999999999999")) > 0) {
@@ -151,12 +161,19 @@ public class SaleService {
     }
 
     private void recalculate(long order) {
-        BigDecimal total = db.items(order).stream().map(row -> (BigDecimal) row.get("line_total"))
+        var items = db.items(order);
+        BigDecimal subtotal = items.stream().map(row -> ((BigDecimal) row.get("quantity"))
+                        .multiply((BigDecimal) row.get("unit_price")).setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (total.compareTo(new BigDecimal("9999999999999999")) > 0 || total.stripTrailingZeros().scale() > 0) {
+        BigDecimal discount = items.stream().map(row -> (BigDecimal) row.get("discount_amount"))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = items.stream().map(row -> (BigDecimal) row.get("line_total"))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (subtotal.compareTo(new BigDecimal("9999999999999999")) > 0
+                || total.compareTo(new BigDecimal("9999999999999999")) > 0 || total.stripTrailingZeros().scale() > 0) {
             throw new BusinessException("Tổng tiền cần là số nguyên đồng trong giới hạn dữ liệu.");
         }
-        db.totals(order, total);
+        db.totals(order, subtotal, discount, total);
     }
 
     @Transactional
@@ -214,6 +231,7 @@ public class SaleService {
         if (items.isEmpty()) {
             throw new BusinessException("Đơn hàng chưa có sản phẩm.");
         }
+        checkTotals(order, items);
         BigDecimal due = (BigDecimal) order.get("total_amount");
         if (received.compareTo(due) < 0 || (reference != null && received.compareTo(due) != 0)) {
             throw new BusinessException(reference == null ? "Số tiền khách đưa chưa đủ." : "Tiền chuyển khoản phải đúng số phải trả, không thiếu hoặc thừa.");
@@ -236,6 +254,31 @@ public class SaleService {
                 reference, actor, now);
         db.markPaid(orderId, now);
         return db.createInvoice(orderId, payment, actor, PosSupport.number("HD-"), now);
+    }
+
+    private void checkTotals(Map<String, Object> order, List<Map<String, Object>> items) {
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+        for (var item : items) {
+            BigDecimal gross = ((BigDecimal) item.get("quantity")).multiply((BigDecimal) item.get("unit_price"))
+                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal reduction = (BigDecimal) item.get("discount_amount");
+            BigDecimal line = (BigDecimal) item.get("line_total");
+            if (gross.signum() <= 0 || reduction.signum() < 0 || reduction.compareTo(gross) > 0
+                    || line.compareTo(gross.subtract(reduction)) != 0) {
+                throw new BusinessException("Dữ liệu dòng hàng không hợp lệ, chưa thể thanh toán.");
+            }
+            subtotal = subtotal.add(gross);
+            discount = discount.add(reduction);
+            total = total.add(line);
+        }
+        if (subtotal.compareTo((BigDecimal) order.get("subtotal_amount")) != 0
+                || discount.compareTo((BigDecimal) order.get("discount_amount")) != 0
+                || total.compareTo((BigDecimal) order.get("total_amount")) != 0
+                || total.compareTo(subtotal.subtract(discount)) != 0) {
+            throw new BusinessException("Tổng đơn hàng không khớp các dòng, chưa thể thanh toán.");
+        }
     }
 
     @Transactional

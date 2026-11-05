@@ -66,10 +66,6 @@
       <h2>Thêm sản phẩm mới</h2>
       <form th:action="@{/products}" method="post" class="grid-form">
         <div class="field">
-          <label for="code">Mã SKU *</label>
-          <input id="code" name="code" maxlength="20" th:value="${form?.code}" placeholder="Ví dụ: SP01" required>
-        </div>
-        <div class="field">
           <label for="barcode">Mã vạch Barcode *</label>
           <input id="barcode" name="barcode" maxlength="50" th:value="${form?.barcode}" placeholder="Ví dụ: 89346731..." required>
         </div>
@@ -78,16 +74,16 @@
           <input id="name" name="name" maxlength="200" th:value="${form?.name}" placeholder="Ví dụ: Sữa tươi tiệt trùng Vinamilk 1L" required>
         </div>
         <div class="field">
-          <label for="categoryId">Nhóm hàng hóa *</label>
-          <select id="categoryId" name="categoryId" required>
-            <option value="">-- Chọn nhóm hàng --</option>
+          <label for="categoryId">Nhóm hàng hóa</label>
+          <select id="categoryId" name="categoryId">
+            <option value="">Chưa phân loại (mặc định)</option>
             <option th:each="category : ${categories}" th:value="${category.id}" th:selected="${form?.categoryId == category.id}" th:text="${category.name}"></option>
           </select>
         </div>
         <div class="field">
-          <label for="unitId">Đơn vị tính *</label>
-          <select id="unitId" name="unitId" required>
-            <option value="">-- Chọn đơn vị --</option>
+          <label for="unitId">Đơn vị tính</label>
+          <select id="unitId" name="unitId">
+            <option value="">Cái (mặc định)</option>
             <option th:each="unit : ${units}" th:value="${unit.id}" th:selected="${form?.unitId == unit.id}" th:text="${unit.name}"></option>
           </select>
         </div>

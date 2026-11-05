@@ -1,39 +1,47 @@
 package pos.repository;
 
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 
-import org.springframework.jdbc.core.simple.JdbcClient;
+import jakarta.persistence.EntityManager;
+
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pos.entity.Account;
+import pos.entity.AccountEntity;
 
 @Repository
 public class AccountRepository {
-    private final JdbcClient jdbc;
+    private final EntityManager entityManager;
 
-    public AccountRepository(JdbcClient jdbc) {
-        this.jdbc = jdbc;
+    public AccountRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
+    @Transactional(readOnly = true)
     public Optional<Account> findByUsername(String username) {
-        return jdbc.sql("""
-                SELECT a.id, a.username, a.password_hash, a.full_name, a.status, r.code AS role_code
-                FROM accounts a JOIN roles r ON r.id = a.role_id WHERE a.username = :username
-                """)
-                .param("username", username)
-                .query((row, index) -> new Account(row.getLong("id"), row.getString("username"),
-                        row.getString("password_hash"), row.getString("full_name"), row.getString("role_code"),
-                        row.getString("status"), Set.of()))
-                .optional()
-                .map(account -> {
-                    var permissions = jdbc.sql("""
-                            SELECT p.code FROM permissions p
-                            JOIN role_permissions rp ON rp.permission_id = p.id
-                            JOIN accounts a ON a.role_id = rp.role_id WHERE a.id = :id
-                            """).param("id", account.id()).query(String.class).list();
-                    return new Account(account.id(), account.username(), account.passwordHash(), account.fullName(),
-                            account.roleCode(), account.status(), Set.copyOf(permissions));
-                });
+        var matches = entityManager.createQuery("""
+                select a, r.code from AccountEntity a, RoleEntity r
+                where a.roleId = r.id and a.username = :username
+                """, Object[].class)
+                .setParameter("username", username)
+                .getResultList();
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+        if (matches.size() > 1) {
+            throw new jakarta.persistence.NonUniqueResultException();
+        }
+        var row = matches.get(0);
+        var account = (AccountEntity) row[0];
+        var permissions = entityManager.createQuery("""
+                select p.code from RolePermissionEntity rp, PermissionEntity p
+                where rp.permissionId = p.id and rp.roleId = :roleId
+                """, String.class)
+                .setParameter("roleId", account.getRoleId())
+                .getResultList();
+        return Optional.of(new Account(account.getId(), account.getUsername(), account.getPasswordHash(),
+                account.getFullName(), (String) row[1], account.getStatus(), Set.copyOf(permissions)));
     }
 }

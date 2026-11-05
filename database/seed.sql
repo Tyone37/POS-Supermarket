@@ -18,6 +18,7 @@ ON DUPLICATE KEY UPDATE permission_id=VALUES(permission_id);
 INSERT INTO registers(code,name,status) VALUES('Q01','Quầy 1','ACTIVE'),('Q02','Quầy 2','ACTIVE')
 ON DUPLICATE KEY UPDATE code=VALUES(code);
 INSERT INTO product_categories(code,name,status) VALUES
+ ('UNCLASSIFIED','Chưa phân loại','ACTIVE'),
  ('DAIRY','Sữa và trứng','ACTIVE'),('FOOD','Thực phẩm','ACTIVE'),('DRINK','Đồ uống','ACTIVE')
 ON DUPLICATE KEY UPDATE code=VALUES(code);
 INSERT INTO units(code,name,quantity_scale) VALUES('HOP','Hộp',0),('CHAI','Chai',0),('CAI','Cái',0),('KG','Kilôgam',3)

@@ -58,7 +58,7 @@
         <label for="registerId">Quầy bán hàng *</label>
         <select id="registerId" name="registerId" required>
           <option value="">-- Chọn quầy phục vụ --</option>
-          <option th:each="register : ${registers}" th:value="${register.id}" th:text="${register.name}"></option>
+          <option th:each="register : ${registers}" th:value="${register.id}" th:selected="${registerId == register.id}" th:text="${register.name}"></option>
         </select>
       </div>
 

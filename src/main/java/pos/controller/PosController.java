@@ -68,6 +68,8 @@ public class PosController {
             response.setStatus(400);
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("openingCash", openingCash);
+            model.addAttribute("registerId", registerId);
+            model.addAttribute("requestKey", openRequestKey);
             return shifts(actor, model);
         }
     }
@@ -148,14 +150,17 @@ public class PosController {
 
     @GetMapping("/sales/{id}")
     public String order(Principal actor, @PathVariable long id, @RequestParam(defaultValue = "") String q,
-                        @RequestParam(required = false) Long category, Model model) {
+                        @RequestParam(required = false) Long category, @RequestParam(defaultValue = "0") int page, Model model) {
         var order = sales.view(actor.getName(), id);
         if ("DRAFT".equals(order.get("status")) && !Boolean.TRUE.equals(order.get("shift_open"))) {
             return "redirect:/shifts";
         }
         model.addAttribute("order", order);
         model.addAttribute("items", sales.items(actor.getName(), id));
-        model.addAttribute("products", catalog.search(q, category, true));
+        var products = catalog.search(q, category, true, Math.max(0, page));
+        model.addAttribute("products", products.stream().limit(20).toList());
+        model.addAttribute("hasNext", products.size() > 20);
+        model.addAttribute("page", Math.max(0, page));
         model.addAttribute("categories", catalog.categories());
         model.addAttribute("q", q);
         model.addAttribute("category", category);
@@ -177,6 +182,9 @@ public class PosController {
 
     @GetMapping("/sales/{id}/remove/{itemId}")
     public String removeConfirm(Principal actor, @PathVariable long id, @PathVariable long itemId, Model model) {
+        var order = sales.view(actor.getName(), id);
+        if (!Boolean.TRUE.equals(order.get("shift_open"))) { return "redirect:/shifts"; }
+        if (!"DRAFT".equals(order.get("status"))) { return "redirect:/sales/" + id; }
         var item = sales.items(actor.getName(), id).stream().filter(row -> ((Number) row.get("id")).longValue() == itemId)
                 .findFirst().orElseThrow(() -> new BusinessException("Dòng sản phẩm không thuộc đơn hàng."));
         return confirm(model, "Xóa " + item.get("product_name_snapshot") + " khỏi đơn?",
@@ -192,7 +200,9 @@ public class PosController {
 
     @GetMapping("/sales/{id}/cancel")
     public String cancelConfirm(Principal actor, @PathVariable long id, Model model) {
-        sales.view(actor.getName(), id);
+        var order = sales.view(actor.getName(), id);
+        if (!Boolean.TRUE.equals(order.get("shift_open"))) { return "redirect:/shifts"; }
+        if (!"DRAFT".equals(order.get("status"))) { return "redirect:/sales/" + id; }
         model.addAttribute("cancelReason", true);
         return confirm(model, "Hủy đơn hàng đang bán?", "/sales/" + id + "/cancel", "/sales/" + id, null);
     }

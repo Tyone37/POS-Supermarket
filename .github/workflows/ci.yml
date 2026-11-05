@@ -20,3 +20,11 @@ jobs:
 
       - name: Build va chay test
         run: mvn -B verify
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci

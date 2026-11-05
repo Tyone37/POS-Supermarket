@@ -4,15 +4,20 @@ const preview = document.querySelector<HTMLOutputElement>("#change-preview");
 if (cashForm && cashInput && preview) {
   const total = BigInt((cashForm.dataset.total ?? "0").split(".")[0]);
   const update = (): void => {
-    const input = cashInput.value.trim();
-    if (!/^\d{1,16}$/.test(input)) {
-      preview.textContent = "Nhập số tiền nguyên đồng hợp lệ";
+    const input = typeof parseMoneyInput === "function" ? parseMoneyInput(cashInput.value) : cashInput.value.trim();
+    if (input === null || !/^\d{1,16}$/.test(input)) {
+      preview.textContent = "";
+      if (preview.parentElement) preview.parentElement.hidden = true;
       return;
     }
+    if (preview.parentElement) preview.parentElement.hidden = false;
     const difference = BigInt(input) - total;
-    preview.textContent = difference < 0n
-      ? `Còn thiếu: ${(-difference).toLocaleString("vi-VN")} đ`
-      : `Tiền thừa: ${difference.toLocaleString("vi-VN")} đ`;
+    const unit = document.createElement("span");
+    unit.className = "currency-unit"; unit.textContent = "VNĐ";
+    const amount = difference < 0n
+      ? `Còn thiếu: ${(-difference).toLocaleString("vi-VN")}`
+      : `Tiền thừa: ${difference.toLocaleString("vi-VN")}`;
+    preview.replaceChildren(document.createTextNode(amount), unit);
   };
   cashInput.addEventListener("input", update);
   update();

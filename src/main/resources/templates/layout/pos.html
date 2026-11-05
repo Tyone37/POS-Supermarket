@@ -1,41 +1,30 @@
-<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head(title)">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title th:text="${title} + ' · POS Supermarket'">POS Supermarket</title>
-  <link rel="stylesheet" th:href="@{/css/pos.css}">
-</head>
-<body>
-<header th:fragment="header">
-  <a class="brand" th:href="@{/}">
-    <div class="brand-badge">POS</div>
-    <div class="brand-text">POS <span>Supermarket</span></div>
-  </a>
-  <nav aria-label="Điều hướng chính">
-    <a th:if="${canCashier}" th:href="@{/shifts}">Ca làm việc</a>
-    <a th:if="${canCashier}" th:href="@{/sales}">Bán hàng</a>
-    <a th:if="${canManager}" th:href="@{/products}">Sản phẩm</a>
-    <a th:if="${canAdmin}" th:href="@{/accounts}">Tài khoản</a>
-  </nav>
-  <div class="header-user-section">
-    <div class="user-pill">
-      <span class="avatar" th:text="${username != null and !#strings.isEmpty(username) ? #strings.substring(username,0,1).toUpperCase() : 'U'}">U</span>
-      <span class="user-name" th:text="${username ?: 'Nhân viên'}">Nhân viên</span>
-    </div>
-    <form class="logout-form" th:action="@{/logout}" method="post">
-      <button class="btn-logout" type="submit" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
-    </form>
-  </div>
-</header>
-<div th:fragment="feedback">
-  <div th:if="${message}" class="notice" role="status">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
-    <span th:text="${message}"></span>
-  </div>
-  <div th:if="${error}" class="error" role="alert">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span th:text="${error}"></span>
-  </div>
-</div>
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:fragment="head(title)">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title th:text="${title} + ' · POS Supermarket'">POS Supermarket</title>
+<link rel="preload" th:href="@{/css/fonts/manrope-regular-fca3ae739b.woff2}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" th:href="@{/css/fonts/manrope-medium-c25c6f1196.woff2}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" th:href="@{/css/fonts/manrope-semibold-a53828bfdd.woff2}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" th:href="@{/css/fonts/manrope-bold-25408a1a84.woff2}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" th:href="@{/css/demo-reference.css}"><link rel="stylesheet" th:href="@{/css/ui-integration.css}">
+<script th:src="@{/js/money-input.js}" defer></script><script th:src="@{/js/ui-shell.js}" defer></script><script th:src="@{/js/cart-update.js}" defer></script><script th:src="@{/js/reference-selects.js}" defer></script></head><body>
+<aside th:fragment="sidebar" class="sidebar" id="sidebar">
+<a class="brand pos-brand" th:href="@{/}" aria-label="POS Supermarket, trang chủ"><span class="pos-wordmark">POS<span class="pos-wordmark-dot"></span></span><span class="pos-brand-caption">BÁN HÀNG TẠI QUẦY</span></a>
+<nav class="navgroup" th:if="${canManager}" aria-label="KHÔNG GIAN CHUNG"><div class="navlabel">KHÔNG GIAN CHUNG</div><button th:if="${canManager}" class="navitem" type="button" data-future="Tổng quan"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Tổng quan</span></button></nav>
+<nav class="navgroup" th:if="${canCashier or canManager}" aria-label="NGHIỆP VỤ TẠI QUẦY"><div class="navlabel">NGHIỆP VỤ TẠI QUẦY</div><a th:if="${canCashier}" class="navitem" data-page="pos" th:href="@{/sales/workspace}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10M7 7h10M7 11h5"/></svg><span>Bán hàng tại quầy</span></a><a th:if="${canCashier}" class="navitem" data-page="orders" th:href="@{/sales}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg><span>Đơn hàng</span></a><button th:if="${canManager}" class="navitem" type="button" data-future="Đơn hàng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg><span>Đơn hàng</span></button><button th:if="${canCashier or canManager}" class="navitem" type="button" data-future="Hóa đơn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Zm4 5h6m-6 4h6m-6 4h3"/></svg><span>Hóa đơn</span></button><a th:if="${canCashier}" class="navitem" data-page="shifts" th:href="@{/shifts}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg><span>Ca làm việc</span></a><button th:if="${canManager}" class="navitem" type="button" data-future="Ca làm việc"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg><span>Ca làm việc</span></button><button th:if="${canCashier or canManager}" class="navitem" type="button" data-future="Trả / đổi hàng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12"/></svg><span>Trả / đổi hàng</span></button></nav>
+<nav class="navgroup" th:if="${canManager}" aria-label="QUẢN LÝ"><div class="navlabel">QUẢN LÝ</div><a th:if="${canManager}" class="navitem" data-page="products" th:href="@{/products}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10M7 5l10 4"/></svg><span>Sản phẩm</span></a><button th:if="${canManager}" class="navitem" type="button" data-future="Khuyến mãi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13 12 21 3 12V3h9l8 8a1.5 1.5 0 0 1 0 2Z"/><circle cx="7.5" cy="7.5" r="1"/></svg><span>Khuyến mãi</span></button><button th:if="${canManager}" class="navitem" type="button" data-future="Báo cáo doanh thu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v17h17M9 15v-4m5 4V6m5 9V9"/></svg><span>Báo cáo doanh thu</span></button></nav>
+<nav class="navgroup" th:if="${canAdmin}" aria-label="HỆ THỐNG"><div class="navlabel">HỆ THỐNG</div><a th:if="${canAdmin}" class="navitem" data-page="accounts" th:href="@{/accounts}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m1-16a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/></svg><span>Tài khoản</span></a><button th:if="${canAdmin}" class="navitem" type="button" data-future="Phân quyền"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Z"/><path d="m8 12 3 3 5-6"/></svg><span>Phân quyền</span></button></nav>
+
+<div class="sidebar-bottom"><form class="app-logout" th:action="@{/logout}" method="post"><button class="navitem logout" type="submit"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H4v18h5m5-14 5 5-5 5m-6-5h11"/></svg><span>Đăng xuất</span></button></form></div></aside>
+<header th:fragment="header" class="topbar">
+<div class="row"><button type="button" class="iconbtn mobile-menu" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="breadcrumb"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18L19 3H5l-2 7Zm1 0v11h16V10M9 21v-7h6v7M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg><span>Không gian làm việc</span><span>/</span><span data-page-label>Không gian làm việc</span></div></div>
+<div class="topright"><button class="quick-nav" type="button" data-quick-nav aria-label="Tìm nhanh chức năng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Tìm nhanh chức năng</span><kbd>Ctrl K</kbd></button><time class="topdate" data-clock></time><span class="divider"></span><button class="account-chip" type="button" data-future="Chuyển vai trò" aria-label="Tài khoản đang đăng nhập">
+<span class="account-avatar" th:text="${uiInitials}">NV</span><span class="account-copy"><strong th:text="${#strings.replace(#strings.replace(#strings.replace(uiDisplayName,' (Quản trị)',''),' (Quản lý)',''),' (Thu ngân)','')}">Nhân viên</strong><span class="account-role"><i aria-hidden="true"></i><span th:text="${canAdmin ? 'Quản trị viên' : (canManager ? 'Quản lý' : 'Thu ngân')}">Thu ngân</span></span></span><svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></button></div></header>
+
+<th:block th:fragment="dialogs">
+<dialog id="logout-confirmation" aria-labelledby="logout-title"><div class="modalhead"><h2 id="logout-title">Xác nhận đăng xuất</h2></div><div class="modalbody"><p>Bạn có chắc muốn đăng xuất khỏi hệ thống?</p></div><div class="modalfoot"><button class="btn" type="button" data-cancel-logout autofocus>Ở lại</button><button class="btn danger" type="button" data-confirm-logout>Đăng xuất</button></div></dialog>
+<dialog id="future-feature" aria-labelledby="future-title"><div class="modalhead"><h2 id="future-title">Tính năng đang phát triển</h2><button class="iconbtn" type="button" data-close-dialog aria-label="Đóng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="modalbody"><p>Tính năng đang phát triển ở sprint tiếp theo.</p></div><div class="modalfoot"><button class="btn primary" type="button" data-close-dialog>Đã hiểu</button></div></dialog>
+<dialog class="command-dialog" id="quick-navigation" aria-labelledby="quick-title"><div class="modalhead"><h2 id="quick-title">Tìm nhanh chức năng</h2><button class="iconbtn" type="button" data-close-dialog aria-label="Đóng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="modalbody"><div class="command-search"><input type="search" data-quick-search aria-label="Tìm chức năng" placeholder="Tìm tên màn hình…"><kbd>Esc</kbd></div><div class="command-results" data-quick-results></div><div class="command-hint"><span>Chỉ hiển thị chức năng thuộc vai trò của bạn</span><span>↓ Chọn · Enter Mở</span></div></div></dialog>
+
+</th:block>
+<div th:fragment="feedback"><div th:if="${message}" class="notice success" role="status" th:text="${message}"></div><div th:if="${error}" class="notice danger" role="alert" th:text="${error}"></div></div>
 </body></html>

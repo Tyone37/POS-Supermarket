@@ -1,22 +1,13 @@
 package pos.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import pos.config.TransferSettings;
-import pos.dto.Forms;
 import pos.exception.BusinessException;
 import pos.repository.PosRepository;
 
@@ -26,7 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-class SaleServiceTest {
+/** SCRUM-35 — test riêng theo user story. */
+class Scrum35ThemSanPhamVaoDonTest {
     private PosRepository db;
     private SaleService service;
     private Map<String, Object> order;
@@ -92,60 +84,7 @@ class SaleServiceTest {
     }
 
     @Test
-    void thanhToanTienMatHopLeVaTinhTienThua() {
-        when(db.createInvoice(anyLong(), anyLong(), anyLong(), anyString(), any())).thenReturn(50L);
-        Forms.Payment form = new Forms.Payment("CASH", "50000", null, "pay-key-123", false);
-        assertEquals(50L, service.pay("cashier", 10L, form));
-        verify(db)
-                .createPayment(
-                        eq(10L),
-                        eq("CASH"),
-                        eq("SUCCESS"),
-                        eq(new BigDecimal("40000.00")),
-                        eq(new BigDecimal("50000.00")),
-                        eq(new BigDecimal("10000.00")),
-                        eq("pay-key-123"),
-                        isNull(),
-                        eq(1L),
-                        any());
-    }
-
-    @Test
-    void thanhToanKhachDuaThieuTien() {
-        Forms.Payment form = new Forms.Payment("CASH", "30000", null, "pay-key-123", false);
-        assertThrows(BusinessException.class, () -> service.pay("cashier", 10L, form));
-        verify(db, never()).markPaid(anyLong(), any());
-    }
-
-    @Test
-    void chuyenKhoanChuaXacNhanNhanTien() {
-        Forms.Payment form =
-                new Forms.Payment("BANK_TRANSFER", "40000", "FT123", "pay-key-123", false);
-        assertThrows(BusinessException.class, () -> service.pay("cashier", 10L, form));
-    }
-
-    @Test
     void themMaSanPhamKhongTonTai() {
         assertThrows(BusinessException.class, () -> service.add("cashier", 10L, "ma-sai"));
-    }
-
-    @Test
-    void nhapSoLuongAm() {
-        assertThrows(
-                BusinessException.class, () -> service.quantity("cashier", 10L, 30L, "-1", false));
-    }
-
-    @Test
-    void huyDonDaXacNhan() {
-        service.cancel("cashier", 10L, "Khách đổi ý", true);
-        verify(db).cancel(eq(10L), eq("Khách đổi ý"), any());
-    }
-
-    @Test
-    void huyDonChuaXacNhan() {
-        assertThrows(
-                BusinessException.class,
-                () -> service.cancel("cashier", 10L, "Khách đổi ý", false));
-        verify(db, never()).cancel(anyLong(), anyString(), any());
     }
 }

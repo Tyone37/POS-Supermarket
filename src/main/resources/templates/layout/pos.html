@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title th:text="${title} + ' · POS Supermarket'">POS Supermarket</title>
+  <link rel="stylesheet" th:href="@{/css/pos.css}">
+</head>
+<body>
+<header th:fragment="header">
+  <a class="brand" th:href="@{/}">
+    <div class="brand-badge">POS</div>
+    <div class="brand-text">POS <span>Supermarket</span></div>
+  </a>
+  <nav aria-label="Điều hướng chính">
+    <a th:if="${canCashier}" th:href="@{/shifts}">Ca làm việc</a>
+    <a th:if="${canCashier}" th:href="@{/sales}">Bán hàng</a>
+    <a th:if="${canManager}" th:href="@{/products}">Sản phẩm</a>
+    <a th:if="${canAdmin}" th:href="@{/accounts}">Tài khoản</a>
+  </nav>
+  <div class="header-user-section">
+    <div class="user-pill">
+      <span class="avatar" th:text="${username != null and !#strings.isEmpty(username) ? #strings.substring(username,0,1).toUpperCase() : 'U'}">U</span>
+      <span class="user-name" th:text="${username ?: 'Nhân viên'}">Nhân viên</span>
+    </div>
+    <form class="logout-form" th:action="@{/logout}" method="post">
+      <button class="btn-logout" type="submit" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
+    </form>
+  </div>
+</header>
+<div th:fragment="feedback">
+  <div th:if="${message}" class="notice" role="status">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+    <span th:text="${message}"></span>
+  </div>
+  <div th:if="${error}" class="error" role="alert">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span th:text="${error}"></span>
+  </div>
+</div>
+</body></html>

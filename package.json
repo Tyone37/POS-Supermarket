@@ -1,4 +1,9 @@
 {
+  "name": "pos-supermarket-ui",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": { "build": "tsc", "watch": "tsc --watch" },
+  "devDependencies": { "typescript": "5.9.3" }
   "name": "pos-supermarket",
   "version": "0.0.1",
   "private": true,

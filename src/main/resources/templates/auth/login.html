@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập · POS Supermarket</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+  <div class="login-layout">
+    <!-- Left Hero Panel -->
+    <section class="login-hero">
+      <div class="pos-brand">
+        <span class="pos-wordmark">POS<span class="pos-wordmark-dot"></span></span>
+        <span class="pos-brand-caption">BÁN HÀNG TẠI QUẦY · SIÊU THỊ</span>
+      </div>
+
+      <div>
+        <h1>Bán hàng gọn gàng.<br>Quản lý nhẹ nhàng.</h1>
+        <p>Hệ thống bán hàng và kiểm soát ca làm việc chuẩn hóa cho thu ngân, quản lý cửa hàng và quản trị viên.</p>
+
+        <div class="login-visual">
+          <div class="header-row">
+            <h3>Vận hành trong tầm tay</h3>
+            <span class="badge success"><span class="dot"></span>Sẵn sàng</span>
+          </div>
+          <div class="login-chart">
+            <i style="--h: 45%"></i>
+            <i style="--h: 68%"></i>
+            <i style="--h: 52%"></i>
+            <i class="active" style="--h: 96%"></i>
+            <i style="--h: 74%"></i>
+            <i style="--h: 88%"></i>
+            <i style="--h: 80%"></i>
+          </div>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <!-- Right Login Form -->
+    <section class="login-form-wrap">
+      <div class="login-card">
+        <span class="badge primary"><span class="dot"></span>Đăng nhập hệ thống</span>
+        <h2>Chào mừng trở lại</h2>
+        <p class="subtitle">Đăng nhập tài khoản được cấp để vào đúng không gian làm việc.</p>
+
+        <!-- Messages -->
+        <div th:if="${param.error != null and param.error[0] == 'locked'}" class="alert error" role="alert">
+          <div><strong>Tài khoản đã bị khóa:</strong> Không thể đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hỗ trợ.</div>
+        </div>
+        <div th:if="${param.error != null and param.error[0] != 'locked'}" class="alert error" role="alert">
+          <div><strong>Đăng nhập thất bại:</strong> Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại.</div>
+        </div>
+        <div th:if="${param.logout != null}" class="alert success" role="status">
+          <div><strong>Đã đăng xuất:</strong> Phiên làm việc của bạn đã kết thúc an toàn.</div>
+        </div>
+
+        <form th:action="@{/login}" method="post">
+          <div class="field">
+            <label for="username">Tên đăng nhập</label>
+            <input id="username" name="username" autocomplete="username" maxlength="100" placeholder="Ví dụ: cashier, manager, admin" required autofocus>
+          </div>
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn" required>
+            <div class="field-hint">Mật khẩu phân biệt chữ hoa và chữ thường.</div>
+          </div>
+          <button type="submit" class="btn-primary">
+            Vào không gian làm việc
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

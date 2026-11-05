@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Thanh toán đơn hàng')}"></head>
+<body>
+<header th:replace="~{layout/pos :: header}"></header>
+
+<main>
+  <div class="page-title">
+    <div>
+      <p class="eyebrow" th:text="${order.order_no} + ' · QUẦY THU NGÂN'"></p>
+      <h1>Thanh toán đơn hàng</h1>
+      <p class="muted">Chọn phương thức thanh toán tiền mặt hoặc chuyển khoản QR cho đơn hàng.</p>
+    </div>
+    <a class="button secondary" th:href="@{/sales/{id}(id=${order.id})}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      Quay lại giỏ hàng
+    </a>
+  </div>
+
+  <div th:replace="~{layout/pos :: feedback}"></div>
+
+  <!-- Summary Card -->
+  <section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span class="muted" style="font-size: 11px;">MÃ ĐƠN HÀNG</span>
+        <h2 style="margin: 2px 0 0;" th:text="${order.order_no}">Đơn hàng</h2>
+      </div>
+      <span th:if="${order.status == 'DRAFT'}" class="badge neutral">Chưa thanh toán / Chờ thu ngân</span>
+      <span th:if="${order.status == 'PAID'}" class="badge success">Đã thanh toán</span>
+      <span th:if="${order.status != 'DRAFT' and order.status != 'PAID'}" class="badge danger" th:text="'Trạng thái: ' + ${order.status}">Trạng thái</span>
+    </div>
+
+    <div class="total" style="margin-top: 16px;">
+      <span>SỐ TIỀN CẦN THANH TOÁN</span>
+      <strong th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</strong>
+    </div>
+
+    <div th:if="${invoiceId != null}" style="margin-top: 14px;">
+      <a class="button" th:href="@{/invoices/{id}(id=${invoiceId})}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Xem hóa đơn & In
+      </a>
+    </div>
+  </section>
+
+  <!-- Payment Methods Grid -->
+  <div class="columns" style="grid-template-columns: 1fr 1fr;" th:if="${order.status == 'DRAFT' and !#lists.isEmpty(items)}">
+    <!-- Method 1: Cash -->
+    <section class="card">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+        </div>
+        <div>
+          <h2 style="margin: 0;">Tiền mặt</h2>
+          <p class="muted">Khách thanh toán trực tiếp tại quầy</p>
+        </div>
+      </div>
+
+      <form th:action="@{/sales/{id}/pay(id=${order.id})}" method="post" class="grid-form" id="cash-form" th:data-total="${order.total_amount}">
+        <input type="hidden" name="method" value="CASH">
+        <input type="hidden" name="requestKey" th:value="${cashKey}">
+        
+        <div class="field wide">
+          <label for="cashReceived">Tiền khách đưa (đ) *</label>
+          <input id="cashReceived" name="received" type="number" min="0" step="1" max="9999999999999999" th:value="${paymentForm?.method == 'CASH' ? paymentForm.received : ''}" placeholder="Nhập số tiền nhận được" required autofocus>
+        </div>
+
+        <div class="wide" style="padding: 12px; background: var(--soft); border-radius: 10px; border: 1px solid var(--line);">
+          <output id="change-preview" for="cashReceived" aria-live="polite" style="font-weight: 600; font-size: 13px; color: var(--primary);">Nhập tiền khách đưa</output>
+        </div>
+
+        <div class="wide" style="margin-top: 8px;">
+          <button type="submit" style="width: 100%; min-height: 44px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            Xác nhận thu tiền mặt
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Method 2: Bank Transfer (VietQR) -->
+    <section class="card">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/></svg>
+        </div>
+        <div>
+          <h2 style="margin: 0;">Chuyển khoản QR (VietQR)</h2>
+          <p class="muted">Quét mã chuyển tiền tài khoản ngân hàng</p>
+        </div>
+      </div>
+
+      <div th:if="${!configured}" class="error">
+        Chưa cấu hình tài khoản ngân hàng nhận tiền. Vui lòng liên hệ Quản lý cấu hình application.properties.
+      </div>
+
+      <div th:if="${configured}">
+        <div style="text-align: center; margin-bottom: 14px;">
+          <img class="qr" th:src="${qr}" alt="Mã QR chuyển khoản VietQR" style="max-width: 180px; border-radius: 10px; border: 1px solid var(--line-strong);" referrerpolicy="no-referrer">
+          <p class="muted" style="font-size: 10px; margin-top: 6px;">Quét qua ứng dụng Ngân hàng hỗ trợ VietQR</p>
+        </div>
+
+        <dl class="spaced" style="background: var(--soft); padding: 12px; border-radius: 10px; font-size: 11px; margin-bottom: 14px;">
+          <dt>Ngân hàng (BIN):</dt><dd th:text="${transfer.bankBin}"></dd>
+          <dt>Số tài khoản:</dt><dd><strong th:text="${transfer.accountNumber}"></strong></dd>
+          <dt>Chủ tài khoản:</dt><dd th:text="${transfer.accountName}"></dd>
+          <dt>Nội dung chuyển:</dt><dd><strong style="color: var(--primary);" th:text="${#strings.replace(order.order_no,'-','')}"></strong></dd>
+          <dt>Số tiền phải nhận:</dt><dd class="number" th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'"></dd>
+        </dl>
+
+        <form th:action="@{/sales/{id}/pay(id=${order.id})}" method="post" class="grid-form">
+          <input type="hidden" name="method" value="BANK_TRANSFER">
+          <input type="hidden" name="requestKey" th:value="${bankKey}">
+
+          <div class="field wide">
+            <label for="bankReceived">Số tiền thực nhận (đ) *</label>
+            <input id="bankReceived" name="received" type="number" min="0" step="1" max="9999999999999999" th:value="${paymentForm?.method == 'BANK_TRANSFER' ? paymentForm.received : ''}" placeholder="Nhập đúng số tiền hiển thị trên biến động số dư" required>
+          </div>
+
+          <div class="field wide">
+            <label for="reference">Mã tham chiếu / Mã giao dịch ngân hàng *</label>
+            <input id="reference" name="reference" maxlength="100" autocomplete="off" th:value="${paymentForm?.reference}" placeholder="Ví dụ: FT261104..." required>
+            <small class="muted" style="display: block; margin-top: 4px;">Dùng mã giao dịch trên tài khoản nhận tiền. Mỗi mã chỉ dùng cho một đơn.</small>
+          </div>
+
+          <div class="wide" style="margin: 6px 0;">
+            <label class="checkbox" for="verified" style="display: flex; gap: 8px; font-size: 11px; font-weight: normal; cursor: pointer;">
+              <input id="verified" name="verified" type="checkbox" value="true" required style="width: 16px; height: 16px; min-height: 16px;">
+              <span>Tôi xác nhận đã kiểm tra tài khoản cửa hàng và thấy biến động số dư đúng số tiền.</span>
+            </label>
+          </div>
+
+          <div class="wide">
+            <button type="submit" style="width: 100%; min-height: 44px; background: #0284c7; border-color: #0284c7;">
+              Xác nhận đã nhận chuyển khoản
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- Record Failure if unpaid -->
+  <section class="card" th:if="${order.status == 'DRAFT'}" style="margin-top: 20px;">
+    <h2>Chưa nhận được tiền?</h2>
+    <p class="muted" style="margin-bottom: 14px;">Ghi nhận thất bại khi khách đổi ý thanh toán hoặc giao dịch ngân hàng bị lỗi. Đơn vẫn được giữ lại để thử lại.</p>
+    <form th:action="@{/sales/{id}/fail(id=${order.id})}" method="post" class="inline-form">
+      <input type="hidden" name="requestKey" th:value="${failureKey}">
+      <label for="failedMethod">Phương thức gặp sự cố:</label>
+      <select id="failedMethod" name="method">
+        <option value="BANK_TRANSFER">Chuyển khoản</option>
+        <option value="CASH">Tiền mặt</option>
+      </select>
+      <button type="submit" class="secondary">Ghi nhận chưa thu được tiền</button>
+    </form>
+  </section>
+
+  <!-- Payment History -->
+  <section class="card" th:if="${!#lists.isEmpty(payments)}" style="margin-top: 20px;">
+    <h2>Lịch sử các lần giao dịch</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Thời gian</th>
+            <th>Phương thức</th>
+            <th>Trạng thái</th>
+            <th>Mã tham chiếu</th>
+            <th class="number">Tiền nhận</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="payment : ${payments}">
+            <td th:text="${@posTime.format(payment.created_at)}">01/01/2026</td>
+            <td th:text="${payment.method == 'CASH' ? 'Tiền mặt' : 'Chuyển khoản QR'}">Tiền mặt</td>
+            <td>
+              <span th:class="'badge ' + (${payment.status == 'SUCCESS'} ? 'success' : 'danger')"
+                    th:text="${payment.status == 'SUCCESS' ? 'Thành công' : 'Thất bại · Chưa thu tiền'}">
+                Thành công
+              </span>
+            </td>
+            <td th:text="${payment.bank_reference ?: '—'}">—</td>
+            <td class="number" th:text="${#numbers.formatDecimal(payment.amount_received,1,'POINT',0,'COMMA')} + ' đ'">0 đ</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script th:src="@{/js/pos.js}" defer></script>
+</body>
+</html>

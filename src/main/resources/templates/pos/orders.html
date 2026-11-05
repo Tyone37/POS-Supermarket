@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Danh sách đơn hàng')}"></head>
+<body>
+<header th:replace="~{layout/pos :: header}"></header>
+
+<main>
+  <div class="page-title">
+    <div>
+      <p class="eyebrow" th:text="${shift.register_name} + ' · CA ĐANG MỞ'"></p>
+      <h1>Bán hàng tại quầy</h1>
+      <p class="muted">Tạo đơn bán hàng mới hoặc tiếp tục xử lý các đơn hàng đang lập trong ca.</p>
+    </div>
+    <form th:action="@{/sales}" method="post">
+      <input type="hidden" name="requestKey" th:value="${requestKey}">
+      <button type="submit" style="min-height: 44px; padding: 10px 20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        + Tạo đơn hàng mới
+      </button>
+    </form>
+  </div>
+
+  <div th:replace="~{layout/pos :: feedback}"></div>
+
+  <section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2>Danh sách đơn hàng trong ca</h2>
+      <span class="muted" th:text="'Ca: ' + ${shift.shift_no}">Ca</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã đơn hàng</th>
+            <th>Thời gian lập</th>
+            <th>Trạng thái</th>
+            <th class="number">Tổng tiền</th>
+            <th style="text-align: right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="order : ${orders}">
+            <td><strong th:text="${order.order_no}">BH-001</strong></td>
+            <td th:text="${@posTime.format(order.created_at)}" class="muted">01/01/2026 10:00</td>
+            <td>
+              <span th:if="${order.status == 'DRAFT'}" class="badge neutral">Đang lập</span>
+              <span th:if="${order.status == 'PAID'}" class="badge success">Đã thanh toán</span>
+              <span th:if="${order.status == 'CANCELLED'}" class="badge danger">Đã hủy</span>
+              <span th:if="${order.status != 'DRAFT' and order.status != 'PAID' and order.status != 'CANCELLED'}" class="badge warning">Chờ xác nhận</span>
+            </td>
+            <td class="number" style="font-size: 13px; color: var(--primary);" th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')} + ' đ'">0 đ</td>
+            <td style="text-align: right;">
+              <a class="button secondary" style="min-height: 32px; padding: 4px 12px; font-size: 11px;" th:href="@{/sales/{id}(id=${order.id})}">
+                Mở đơn →
+              </a>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(orders)}">
+            <td colspan="5" style="text-align: center; padding: 36px; color: var(--muted);">
+              Chưa có đơn hàng nào trong ca này. Hãy bấm <strong>+ Tạo đơn hàng mới</strong> để bắt đầu giao dịch.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

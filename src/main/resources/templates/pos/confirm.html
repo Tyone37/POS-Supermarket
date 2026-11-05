@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Xác nhận thao tác')}"></head>
+<body>
+<header th:replace="~{layout/pos :: header}"></header>
+
+<main class="narrow">
+  <section class="card" style="padding: 32px; text-align: center;">
+    <div style="width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 50%; background: var(--danger-bg); color: var(--danger); display: grid; place-items: center;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+
+    <h1 style="font-size: 22px;" th:text="${title}">Xác nhận thao tác</h1>
+    <p class="muted" style="margin-bottom: 24px;">Vui lòng kiểm tra kỹ thông tin trước khi thực hiện. Thao tác này có thể không hoàn tác được.</p>
+
+    <form th:action="@{${action}}" method="post" style="max-width: 440px; margin: 0 auto; text-align: left;">
+      <input type="hidden" name="confirmed" value="true">
+      <input th:if="${itemId != null}" type="hidden" name="itemId" th:value="${itemId}">
+
+      <div th:if="${cancelReason}" class="field" style="margin-bottom: 20px;">
+        <label for="reason">Lý do thực hiện (không bắt buộc):</label>
+        <textarea id="reason" name="reason" maxlength="255" rows="3" placeholder="Nhập lý do (ví dụ: Khách đổi ý, hàng lỗi...)" style="width: 100%;"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <a class="button secondary" style="flex: 1; text-align: center;" th:href="@{${back}}">Hủy bỏ / Quay lại</a>
+        <button type="submit" class="button danger" style="flex: 1;">Xác nhận tiếp tục</button>
+      </div>
+    </form>
+  </section>
+</main>
+</body>
+</html>

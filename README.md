@@ -57,27 +57,24 @@ Chưa có chức năng đóng ca, engine khuyến mãi hoặc hóa đơn điện
 
 ## Kiểm chứng và bàn giao
 
-Unit test dùng JUnit 5 và Mockito qua `spring-boot-starter-test`, đặt trong `src/test/java/pos/service`.
-Bộ test cơ bản, mỗi hàm kiểm tra một tình huống, tên hàm bằng tiếng Việt không dấu để dễ đọc.
-Không dùng test tham số hóa hoặc helper dữ liệu chung. Mock repository để không cần MySQL và không sửa dữ liệu ứng dụng.
-Riêng `LoginTest` dùng AuthenticationProvider thật của ứng dụng cùng BCrypt để kiểm tra đúng/sai mật khẩu;
-không chỉ kiểm tra hàm tải thông tin tài khoản.
+Test dùng JUnit 5, Mockito và Spring Security Test. Đã tách theo **14 user story Sprint 1**,
+đặt tên `Scrum24DangNhapTest`, `Scrum25DangXuatTest`... Bảng đầy đủ: [src/test/README.md](src/test/README.md).
+Các unit test nghiệp vụ nằm trong `src/test/java/pos/service`.
+Test đăng nhập, đăng xuất và phân quyền nằm trong `src/test/java/pos/controller`, sử dụng
+cấu hình MockMvc dùng chung trong `SecurityTestSupport` và SecurityConfig/Thymeleaf thật.
+Chỉ mock dữ liệu repository, không cần MySQL và không sửa dữ liệu ứng dụng.
+Tổng 95 ca, bao gồm 90 ca giữ nguyên và 5 ca bổ sung cho hai story tạo/xem hóa đơn.
 
-| File | Tình huống cơ bản |
-|---|---|
-| `LoginTest` | Đúng tài khoản/mật khẩu; sai mật khẩu; tên không tồn tại; bỏ trống tên/mật khẩu; tài khoản khóa |
-| `AccountAdminServiceTest` | Tạo hợp lệ; trùng tên; mật khẩu ngắn; không được tự khóa |
-| `CatalogServiceTest` | Thêm hợp lệ; giá âm; tồn âm; tìm tên không dấu |
-| `ShiftServiceTest` | Mở ca hợp lệ; tiền âm; chưa chọn quầy; chưa có ca |
-| `SaleServiceTest` | Tiền mặt hợp lệ/tính thừa; thiếu tiền; chuyển khoản chưa xác nhận; mã sản phẩm sai; số lượng âm; xác nhận/hủy bỏ hủy đơn |
-
+Ứng dụng cấu hình hết phiên sau 30 phút không hoạt động. Test phiên cũ chỉ mô phỏng cookie
+không có session hợp lệ; không đo thời gian hết hạn thực tế của Tomcat.
+Hiện có thông báo sai đăng nhập, tài khoản khóa, đăng xuất; chưa có thông báo riêng “Phiên đã hết hạn”.
 
 ```powershell
 mvn.cmd -B test
 # Chạy test và đóng gói, giống CI:
 mvn.cmd -B verify
 # Chỉ chạy một nhóm:
-mvn.cmd -B "-Dtest=SaleServiceTest" test
+mvn.cmd -B "-Dtest=Scrum42ThanhToanTest" test
 ```
 
 Kết quả chi tiết nằm trong `target/surefire-reports`. CI chạy `mvn -B verify`, không bỏ qua test.

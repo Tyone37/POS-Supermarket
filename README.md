@@ -58,8 +58,9 @@ Chưa có chức năng đóng ca, engine khuyến mãi hoặc hóa đơn điện
 ## Kiểm chứng và bàn giao
 
 Theo phân công hiện hành, Codex chỉ code/review/build; người khác viết/chạy test và nghiệm thu.
-Các test và dependency test hiện có của đồng đội được giữ nguyên. Không coi build skip tests là đã đạt AC.
-Bên kiểm thử dùng `mvn.cmd -B verify` khi được giao; test H2 không thay thế kiểm tra khóa/constraint/transaction MySQL.
+Bộ test tự động cũ và dependency H2/JUnit/Mockito đã được bỏ theo yêu cầu người dùng.
+CI chỉ biên dịch TypeScript và đóng gói ứng dụng bằng `mvn -B package -Dmaven.test.skip=true`.
+CI xanh chỉ xác nhận build thành công; không coi là kiểm thử nghiệp vụ hoặc đã đạt AC.
 
 Bản JPA dùng JAR mặc định `target/pos-supermarket-0.0.1-SNAPSHOT.jar` và cổng 8080.
 Cổng 8081 và thư mục `target/jpa-build/` chỉ dùng trong lượt kiểm tra tách biệt trước khi thay runtime cũ.

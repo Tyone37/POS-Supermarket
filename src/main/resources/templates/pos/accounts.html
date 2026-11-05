@@ -1,103 +1,40 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout/pos :: head('Quản trị tài khoản')}"></head>
-<body>
-<header th:replace="~{layout/pos :: header}"></header>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}"><aside th:replace="~{layout/pos :: sidebar}"></aside><button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button><div class="workspace"><header th:replace="~{layout/pos :: header}"></header>
 
-<main>
-  <div class="page-title">
-    <div>
-      <p class="eyebrow">KHÔNG GIAN QUẢN TRỊ VIÊN</p>
-      <h1>Tài khoản nhân viên</h1>
-      <p class="muted">Cấp phát tài khoản mới, phân quyền vai trò và kiểm soát trạng thái đăng nhập.</p>
-    </div>
-  </div>
-
-  <div th:replace="~{layout/pos :: feedback}"></div>
-
-  <div class="columns" style="grid-template-columns: minmax(0, 1.4fr) 1fr;">
-    <!-- Accounts Table -->
-    <section class="card">
-      <h2>Danh sách tài khoản</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Nhân viên</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th style="text-align: right;">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="account : ${accounts}">
-              <td>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span class="avatar" th:text="${#strings.substring(account.full_name,0,1).toUpperCase()}">A</span>
-                  <div>
-                    <strong th:text="${account.full_name}">Họ và tên</strong>
-                    <small style="display: block; color: var(--muted);" th:text="${account.username}">username</small>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="badge neutral" th:text="${account.role_code == 'CASHIER' ? 'Thu ngân' : (account.role_code == 'MANAGER' ? 'Quản lý' : 'Quản trị viên')}">Vai trò</span>
-              </td>
-              <td>
-                <span th:class="'badge ' + (${account.status == 'ACTIVE'} ? 'success' : 'danger')"
-                      th:text="${account.status == 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}">
-                  Trạng thái
-                </span>
-              </td>
-              <td style="text-align: right;">
-                <a th:if="${account.status == 'ACTIVE' and account.username != username}"
-                   class="button danger"
-                   style="min-height: 28px; padding: 2px 10px; font-size: 11px;"
-                   th:href="@{/accounts/{id}/lock(id=${account.id})}">
-                  Khóa tài khoản
-                </a>
-                <span th:if="${account.username == username}" class="muted" style="font-size: 11px;">(Đang dùng)</span>
-                <span th:if="${account.status != 'ACTIVE'}" class="muted" style="font-size: 11px;">Đã bị khóa</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Create Account Form -->
-    <section class="card">
-      <h2>Tạo tài khoản mới</h2>
-      <form th:action="@{/accounts}" method="post" class="grid-form">
-        <div class="field wide">
+<main tabindex="-1" class="page" id="main-content" data-current-page="accounts"><div class="pagehead"><div><div class="eyebrow">KHÔNG GIAN QUẢN TRỊ</div><h1>Quản lý tài khoản</h1><p>Cấp tài khoản, gán vai trò và kiểm soát quyền đăng nhập của nhân viên.</p></div><div class="actions"><button class="btn primary" type="button" data-open-dialog="create-record"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tạo tài khoản</button></div></div><div th:replace="~{layout/pos :: feedback}"></div><div class="filters"><div class="search"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input data-filter-search aria-label="Tìm tài khoản" placeholder="Tìm họ tên hoặc tên đăng nhập…"></div><div class="field"><label for="account-role">Vai trò</label><select id="account-role" data-filter-select><option value="">Tất cả vai trò</option><option value="CASHIER">Thu ngân</option><option value="MANAGER">Quản lý</option><option value="ADMIN">Quản trị viên</option></select></div></div><article class="card table-card"><div class="tablewrap"><table><thead><tr><th>Nhân viên</th><th>Tên đăng nhập</th><th>Vai trò</th><th>Trạng thái</th><th class="align-right">Thao tác</th></tr></thead><tbody data-filter-rows>
+<tr th:each="account : ${accounts}" th:attr="data-filter-value=${account.role_code}"><td><div class="table-name"><span class="avatar" th:text="${#strings.substring(account.full_name,0,1).toUpperCase()}"></span><span th:text="${account.full_name}"></span></div></td><td th:text="${account.username}"></td><td th:text="${account.role_code == 'CASHIER' ? 'Thu ngân' : (account.role_code == 'MANAGER' ? 'Quản lý' : 'Quản trị viên')}"></td><td><span class="badge" th:classappend="${account.status == 'ACTIVE' ? 'success' : 'neutral'}"><span class="dot"></span><span th:text="${account.status == 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}"></span></span></td><td class="align-right"><a th:if="${account.status == 'ACTIVE' and account.username != username}" class="cell-link" th:href="@{/accounts/{id}/lock(id=${account.id})}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3"/></svg>Khóa tài khoản</a><button th:if="${account.status == 'ACTIVE' and account.username == username}" class="cell-link" type="button" disabled title="Tài khoản đang sử dụng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3"/></svg>Khóa tài khoản</button><span th:if="${account.status != 'ACTIVE'}" class="muted small">Không thể đăng nhập</span></td></tr></tbody></table></div><div class="tablefoot"><span th:text="${#lists.size(accounts)} + ' tài khoản'"></span><span>Khóa tài khoản không xóa lịch sử</span></div></article><div style="margin-top:20px"><div class="notice"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Z"/><path d="m8 12 3 3 5-6"/></svg><div>Tài khoản mới phải có vai trò và tên đăng nhập duy nhất. Chỉ quản trị viên được tạo hoặc khóa tài khoản.</div></div></div><dialog id="create-record" th:attr="data-open=${form != null}"><div class="modalhead"><h2>Tạo tài khoản mới</h2><button class="iconbtn" type="button" data-close-dialog aria-label="Đóng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="modalbody"><div th:if="${error}" class="notice danger" role="alert" th:text="${error}"></div>
+      <form th:action="@{/accounts}" method="post" class="formgrid">
+        <div class="field span2">
           <label for="fullName">Họ và tên nhân viên *</label>
           <input id="fullName" name="fullName" maxlength="200" th:value="${form?.fullName}" placeholder="Ví dụ: Trần Minh Anh" required>
         </div>
-        <div class="field wide">
+        <div class="field span2">
           <label for="username">Tên đăng nhập *</label>
           <input id="username" name="username" minlength="3" maxlength="100" pattern="[a-zA-Z0-9._-]{3,100}" autocomplete="off" th:value="${form?.username}" placeholder="Ví dụ: thungan.anh" required>
         </div>
-        <div class="field wide">
+        <div class="field span2">
           <label for="password">Mật khẩu khởi tạo *</label>
           <input id="password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
           <small class="muted">Tối thiểu 8 ký tự an toàn.</small>
         </div>
-        <div class="field wide">
+        <div class="field span2">
           <label for="roleCode">Vai trò nhân viên *</label>
           <select id="roleCode" name="roleCode" required>
             <option value="">-- Chọn vai trò --</option>
             <option th:each="role : ${roles}" th:value="${role.code}" th:text="${role.name}" th:selected="${form?.roleCode == role.code}"></option>
           </select>
         </div>
-        <div class="wide" style="margin-top: 10px;">
-          <button type="submit" style="width: 100%; min-height: 44px;">
+        <div class="span2" style="margin-top: 10px;">
+          <button type="submit" class="btn primary" style="width: 100%; min-height: 44px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
             Tạo tài khoản nhân viên
           </button>
         </div>
       </form>
-    </section>
-  </div>
-</main>
+    </div></dialog></main></div></div><th:block th:replace="~{layout/pos :: dialogs}"></th:block>
 </body>
 </html>

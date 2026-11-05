@@ -12,9 +12,9 @@ public class TransferSettings {
     private final String accountNumber;
     private final String accountName;
 
-    public TransferSettings(@Value("${pos.transfer.bank-bin:}") String bankBin,
-                            @Value("${pos.transfer.account-number:}") String accountNumber,
-                            @Value("${pos.transfer.account-name:}") String accountName) {
+    public TransferSettings(@Value("${pos.transfer.bank-bin:970422}") String bankBin,
+                            @Value("${pos.transfer.account-number:012311234}") String accountNumber,
+                            @Value("${pos.transfer.account-name:NGUYEN THANH TOAN}") String accountName) {
         this.bankBin = bankBin.strip();
         this.accountNumber = accountNumber.strip();
         this.accountName = accountName.strip();
@@ -31,6 +31,11 @@ public class TransferSettings {
 
     public String qrUrl(BigDecimal amount, String orderNumber) {
         if (!configured()) { return null; }
+        // The supplied QR is static: the customer enters the amount and order reference.
+        if ("970422".equals(bankBin) && "012311234".equals(accountNumber)
+                && "NGUYEN THANH TOAN".equals(accountName)) {
+            return "/img/payment/transfer-qr.png";
+        }
         return UriComponentsBuilder.fromUriString("https://img.vietqr.io/image/" + bankBin + "-"
                 + accountNumber + "-compact2.svg")
                 .queryParam("amount", amount.toBigIntegerExact().toString())

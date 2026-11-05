@@ -1,57 +1,27 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout/pos :: head('Ca làm việc')}"></head>
-<body>
-<header th:replace="~{layout/pos :: header}"></header>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}"><aside th:replace="~{layout/pos :: sidebar}"></aside><button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button><div class="workspace"><header th:replace="~{layout/pos :: header}"></header>
 
-<main class="narrow">
-  <div class="page-title">
-    <div>
-      <p class="eyebrow">KHÔNG GIAN THU NGÂN · CA LÀM VIỆC</p>
-      <h1>Ca làm việc</h1>
-      <p class="muted">Quản lý tiền đầu ca, theo dõi ca hiện tại và chuẩn bị quầy trước khi giao dịch.</p>
-    </div>
-  </div>
-
-  <div th:replace="~{layout/pos :: feedback}"></div>
-
-  <!-- Ca đang mở -->
-  <section class="card" th:if="${shift != null and shift.status == 'OPEN'}">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h2>Ca hiện tại của bạn</h2>
-      <span class="badge success"><span class="dot"></span>Đang mở</span>
-    </div>
-
-    <dl class="spaced" style="background: var(--soft); padding: 18px; border-radius: 14px; border: 1px solid var(--line);">
-      <dt>Mã ca làm việc</dt>
-      <dd><strong th:text="${shift.shift_no}">CA-01</strong></dd>
-      <dt>Quầy thu ngân</dt>
-      <dd th:text="${shift.register_name}">Quầy 01</dd>
-      <dt>Thời gian mở ca</dt>
-      <dd th:text="${@posTime.format(shift.opened_at)}">01/01/2026 08:00</dd>
-      <dt>Tiền mặt đầu ca</dt>
-      <dd class="number" style="font-size: 16px; color: var(--primary);" th:text="${#numbers.formatDecimal(shift.opening_cash,1,'POINT',0,'COMMA')} + ' đ'">500,000 đ</dd>
-    </dl>
-
-    <div style="margin-top: 20px; display: flex; gap: 12px;">
-      <a class="button" style="flex: 1;" th:href="@{/sales}">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Tiếp tục bán hàng
-      </a>
-    </div>
-  </section>
-
-  <!-- Chưa mở ca hoặc ca đã kết thúc -->
-  <section class="card" th:if="${shift == null or shift.status != 'OPEN'}">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-      <h2 th:text="${shift == null ? 'Chưa mở ca' : 'Đã kết thúc'}">Chưa mở ca</h2>
-      <span class="badge neutral" th:text="${shift == null ? 'Chưa hoạt động' : 'Đã đóng ca'}">Trạng thái</span>
-    </div>
-
-    <p th:if="${shift != null}" class="muted" style="margin-bottom: 20px;">Ca trước đã kết thúc và đối soát thành công. Vui lòng mở ca mới để tiếp tục bán hàng.</p>
-    <p th:if="${shift == null}" class="muted" style="margin-bottom: 20px;">Mỗi thu ngân cần mở một ca làm việc và kiểm đếm tiền mặt đầu ca trước khi bắt đầu tiếp nhận khách hàng.</p>
-
-    <form th:action="@{/shifts}" method="post" class="grid-form">
+<main tabindex="-1" id="main-content" data-current-page="shifts" class="page">
+<div class="pagehead"><div><div class="eyebrow" th:text="'THU NGÂN · ' + ${uiDisplayName}">THU NGÂN</div><h1>Ca làm việc của tôi</h1><p>Quản lý tiền đầu ca, theo dõi giao dịch và đối soát khi kết thúc.</p></div><div class="actions">
+<button th:if="${shift != null and shift.status == 'OPEN'}" class="btn" type="button" data-future="Kết thúc ca"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3"/></svg>Kết thúc ca</button>
+<button th:if="${shift == null or shift.status != 'OPEN'}" class="btn primary" type="button" data-open-dialog="open-shift"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Mở ca mới</button></div></div>
+<div th:replace="~{layout/pos :: feedback}"></div>
+<div class="two-col"><div class="stack"><div class="stats" style="grid-template-columns:1fr 1fr">
+<article class="card stat featured"><div class="label">Doanh thu của ca<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h13v4M3 7h18v14H5a2 2 0 0 1-2-2V7Zm18 5h-5v5h5"/><circle cx="17" cy="14.5" r=".5"/></svg></div><div class="value number"><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(uiShiftRevenue,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div><div class="note">Chỉ tính hóa đơn thuộc ca hiện tại</div></article>
+<article class="card stat"><div class="label">Hóa đơn hoàn tất<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Zm4 5h6m-6 4h6m-6 4h3"/></svg></div><div class="value number"><span th:text="${#lists.size(uiShiftInvoices)}">0</span> <small>hóa đơn</small></div><div class="note">Không bao gồm đơn hủy</div></article></div>
+<article class="card table-card"><div class="cardhead"><div><h2>Hóa đơn trong ca</h2><p th:text="${shift != null ? shift.shift_no : 'Chưa có ca đang mở'}"></p></div></div><div class="tablewrap"><table><thead><tr><th>Mã hóa đơn</th><th>Thu ngân</th><th>Thời gian</th><th>Trạng thái</th><th class="align-right">Tổng tiền</th></tr></thead><tbody>
+<tr th:each="invoice : ${uiShiftInvoices}"><td><a class="cell-link" th:href="@{/invoices/{id}(id=${invoice.id})}" th:text="${invoice.invoice_no}"></a></td><td data-label="Thu ngân" th:text="${invoice.cashier_name}"></td><td data-label="Thời gian" th:text="${@posTime.format(invoice.issued_at)}"></td><td data-label="Trạng thái"><span class="badge success"><span class="dot"></span>Đã thanh toán</span></td><td data-label="Tổng tiền" class="number align-right"><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(invoice.total_amount,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></td></tr>
+<tr th:if="${#lists.isEmpty(uiShiftInvoices)}"><td colspan="5"><div class="empty"><h3>Chưa có hóa đơn trong ca</h3><p>Hóa đơn hoàn tất sẽ xuất hiện tại đây.</p></div></td></tr></tbody></table></div></article></div>
+<article class="card"><div class="cardhead"><div><h2>Ca làm việc hiện tại</h2><p>Thông tin tại quầy bán hàng</p></div><span class="badge" th:classappend="${shift != null and shift.status == 'OPEN' ? 'success' : 'neutral'}"><span class="dot"></span><span th:text="${shift == null ? 'Chưa mở ca' : (shift.status == 'OPEN' ? 'Đang mở' : 'Đã kết thúc')}"></span></span></div>
+<th:block th:if="${shift != null}"><div class="shift-surface"><div class="shift-name"><span class="avatar" th:text="${uiInitials}"></span><div><strong th:text="${uiDisplayName}"></strong><p th:text="${shift.register_name} + ' · ' + ${shift.shift_no}"></p></div></div><div class="shift-time"><div><p class="muted small">Mở ca lúc</p><span class="number" th:text="${#strings.substring(@posTime.format(shift.opened_at),11,16)}"></span></div><div style="text-align:right"><p class="muted small">Ngày làm việc</p><span class="number" style="font-size:13px" th:text="${#strings.substring(@posTime.format(shift.opened_at),0,10)}"></span></div></div></div>
+<div class="kv"><span>Tiền đầu ca</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(shift.opening_cash,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div><div class="kv"><span>Hóa đơn hoàn tất</span><span th:text="${#lists.size(uiShiftInvoices)} + ' hóa đơn'"></span></div><div class="kv"><span>Doanh thu tiền mặt</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(uiCashRevenue,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div>
+<div class="shift-buttons"><button class="btn" type="button" data-open-dialog="shift-detail"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>Chi tiết ca</button><a th:if="${shift.status == 'OPEN'}" class="btn primary" th:href="@{/sales/workspace}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10M7 7h10M7 11h5"/></svg>Tiếp tục bán</a><button th:if="${shift.status != 'OPEN'}" class="btn primary" type="button" data-open-dialog="open-shift">Mở ca mới</button></div></th:block>
+<div class="empty" th:if="${shift == null}"><h3>Sẵn sàng cho ca mới</h3><p>Mở ca và nhập tiền đầu ca trước khi bắt đầu bán hàng.</p><button class="btn primary" type="button" data-open-dialog="open-shift"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Mở ca</button></div></article></div>
+<dialog id="open-shift" th:attr="data-open=${registerId != null or openingCash != null}"><div class="modalhead"><h2>Mở ca làm việc</h2><button class="iconbtn" type="button" data-close-dialog aria-label="Đóng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="modalbody"><form th:action="@{/shifts}" method="post" class="formgrid">
       <input type="hidden" name="openRequestKey" th:value="${requestKey}">
       
       <div class="field">
@@ -63,21 +33,17 @@
       </div>
 
       <div class="field">
-        <label for="openingCash">Tiền đầu ca (đ) *</label>
+        <label for="openingCash">Tiền đầu ca <span class="currency-unit">VNĐ</span> *</label>
         <input id="openingCash" name="openingCash" type="number" min="0" step="1" max="9999999999999999" th:value="${openingCash}" placeholder="Ví dụ: 500000" required>
       </div>
 
-      <div class="wide" style="margin-top: 8px;">
-        <button type="submit" style="width: 100%; min-height: 44px;" th:text="${shift == null ? 'Xác nhận mở ca' : 'Mở ca mới'}">
+      <div class="span2" style="margin-top: 8px;">
+        <button type="submit" class="btn primary" style="width: 100%; min-height: 44px;" th:text="${shift == null ? 'Xác nhận mở ca' : 'Mở ca mới'}">
           Mở ca
         </button>
       </div>
-    </form>
-
-    <p th:if="${#lists.isEmpty(registers)}" class="error" style="margin-top: 16px;">
-      Chưa có quầy nào đang hoạt động trong hệ thống. Vui lòng liên hệ Quản trị viên để cấu hình quầy bán hàng.
-    </p>
-  </section>
-</main>
+    </form></div></dialog>
+<dialog id="shift-detail"><div class="modalhead"><h2>Chi tiết ca làm việc</h2><button class="iconbtn" type="button" data-close-dialog aria-label="Đóng"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="modalbody" th:if="${shift != null}"><div class="kv"><span>Mã ca</span><span th:text="${shift.shift_no}"></span></div><div class="kv"><span>Quầy</span><span th:text="${shift.register_name}"></span></div><div class="kv"><span>Thời gian mở</span><span th:text="${@posTime.format(shift.opened_at)}"></span></div><div class="kv"><span>Tiền đầu ca</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(shift.opening_cash,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div></div></dialog>
+</main></div></div><th:block th:replace="~{layout/pos :: dialogs}"></th:block>
 </body>
 </html>

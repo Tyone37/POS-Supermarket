@@ -61,7 +61,7 @@ Chưa có chức năng đóng ca, engine khuyến mãi hoặc hóa đơn điện
 
 ## Kiểm chứng và bàn giao
 
-Test dùng JUnit 5, Mockito và Spring Security Test. Đã tách theo **14 user story Sprint 1**,
+Test dùng JUnit 5, Mockito và Spring Security Test. Tách theo **14 user story Sprint 1**,
 đặt tên `Scrum24DangNhapTest`, `Scrum25DangXuatTest`... Bảng đầy đủ: [src/test/README.md](src/test/README.md).
 Các unit test nghiệp vụ nằm trong `src/test/java/pos/service`.
 Test đăng nhập, đăng xuất và phân quyền nằm trong `src/test/java/pos/controller`, sử dụng
@@ -84,7 +84,3 @@ mvn.cmd -B "-Dtest=Scrum42ThanhToanTest" test
 Kết quả chi tiết nằm trong `target/surefire-reports`. CI chạy `mvn -B verify`, không bỏ qua test.
 Unit test với mock không chứng minh transaction rollback, khóa/unique constraint hoặc tính đúng khi nhiều quầy gửi đồng thời.
 Những phần đó cần integration test trên MySQL riêng và kiểm thử giao diện/nghiệm thu AC.
-
-Bản JPA dùng JAR mặc định `target/pos-supermarket-0.0.1-SNAPSHOT.jar` và cổng 8080.
-Cổng 8081 và thư mục `target/jpa-build/` chỉ dùng trong lượt kiểm tra tách biệt trước khi thay runtime cũ.
-Đã dùng thử thủ công các luồng chính trên CSDL thử riêng; kết quả không thay nghiệm thu toàn bộ AC.

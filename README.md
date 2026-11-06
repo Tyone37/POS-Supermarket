@@ -26,11 +26,15 @@ Profile local hiện có dùng POS_DB_USER cho username; kiểm tra đúng profi
 Giữ mật khẩu trong môi trường hoặc application-local.properties đã gitignore; không commit credential.
 Thời điểm DATETIME(3) được xử lý theo UTC. Tiền dùng BigDecimal; dữ liệu sản phẩm/giá/khuyến mãi lịch sử dùng snapshot.
 
-## Build và chạy trên PowerShell
+## Chạy trên PowerShell
 
 Cần JDK 21+, Node.js/npm, Maven và node_modules đã cài theo package-lock.json.
 Maven tự biên dịch TypeScript ở generate-resources.
 
+```powershell
+mvn spring-boot:run
+```
+Nếu lỗi thì chạy lệnh này
 ```powershell
 npm.cmd ci
 mvn.cmd -B verify

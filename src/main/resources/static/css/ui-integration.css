@@ -129,3 +129,24 @@ button:disabled { cursor:not-allowed; }
 @media print {
   .pos-app * { animation:none!important; transition:none!important; }
 }
+
+/* Category filters: pinned defaults, distinct icons, expandable full list. */
+.category-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;margin-bottom:10px}
+.category-label{font-size:12px;font-weight:650;color:var(--muted)}
+.category-toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--primary);padding:8px 11px;font-size:12px;font-weight:600;cursor:pointer}
+.category-toggle[hidden]{display:none}
+.category-count{background:var(--primary-soft);border-radius:6px;padding:1px 6px;font-variant-numeric:tabular-nums}
+.category-toggle:hover{background:var(--primary-soft)}
+.pos-app .category-tabs{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 10px;margin:0;align-items:center}
+.pos-app .category-tabs.is-expanded{flex-wrap:wrap;overflow:visible}
+.pos-app .category-tabs .chip{--category-ink:#236d54;--category-bg:#eff8f3;display:inline-flex;align-items:center;gap:8px;flex-shrink:0;border:1px solid #dcebe3;background:var(--category-bg);color:var(--category-ink);font-size:12px;min-height:42px;padding:8px 13px;border-radius:12px;white-space:nowrap;transition:background .15s,border-color .15s}
+.pos-app .category-tabs .chip[data-tone="blue"]{--category-ink:#2459a6;--category-bg:#edf4ff;border-color:#d7e5fa}
+.pos-app .category-tabs .chip[data-tone="violet"]{--category-ink:#6b48a4;--category-bg:#f4effc;border-color:#e5daf6}
+.pos-app .category-tabs .chip[data-tone="rose"]{--category-ink:#a84163;--category-bg:#fff0f4;border-color:#f3dce5}
+.pos-app .category-tabs .chip[data-tone="amber"]{--category-ink:#8c601a;--category-bg:#fff7e9;border-color:#f1e3c8}
+.category-icon{width:19px;height:19px;flex-shrink:0}
+.pos-app .category-tabs .chip.category-priority{font-weight:700;border-width:2px}
+.pos-app .category-tabs .chip:hover{border-color:var(--category-ink)}
+.pos-app .category-tabs .chip.active{background:var(--primary);border-color:var(--primary);color:white}
+.category-toggle:focus-visible,.pos-app .category-tabs .chip:focus-visible{outline:3px solid #94b9ff;outline-offset:3px}
+@media(max-width:600px){.category-label{font-size:11px}.category-toolbar{gap:8px}.pos-app .category-tabs .chip{min-height:40px;padding:7px 10px}}

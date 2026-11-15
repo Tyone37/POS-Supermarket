@@ -30,7 +30,7 @@ Muốn đổi quy ước: bàn với cả nhóm, rồi sửa file này bằng m�
 2. **Mỗi tính năng (hoặc mỗi lỗi) một nhánh riêng**, tạo từ `develop`.
 3. Một nhánh chỉ làm **một việc**, sống ngắn (vài ngày), gộp xong thì xóa.
 
-**Đặt tên nhánh:** `loại/mô-tả-ngắn`, chữ thường, tiếng Việt khong dau, nối bằng dấu gạch ngang.
+**Đặt tên nhánh:** `loại/mô-tả-ngắn`, chữ thường, tiếng Việt không dấu, nối bằng dấu gạch ngang.
 
 ```
 feature/login
@@ -59,7 +59,7 @@ git push -u origin feature/product-crud  # đẩy nhánh lên
 
 ## 3. Commit
 
-Định dạng: `loại: mô tả ngắn` (viết ở thể mệnh lệnh, tiếng Anh hoặc tiếng Việt đều được nhưng **thống nhất trong cả nhóm**).
+Định dạng: `loại: mô tả ngắn` (viết ở thể mệnh lệnh, tiếng Anh hoặc tiếng Việt đều được).
 
 | Loại | Dùng khi |
 |---|---|

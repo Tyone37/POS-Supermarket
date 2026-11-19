@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Không gian làm việc | POS Supermarket</title><link rel="stylesheet" th:href="@{/css/auth.css}"></head>
+<body>
+  <header>POS Supermarket</header>
+  <main>
+    <h1 th:text="${workspace}">Không gian làm việc</h1>
+    <p>Đăng nhập thành công.</p>
+    <p>Đây là trang đích để kiểm tra điều hướng theo vai trò. Chức năng nghiệp vụ sẽ được tích hợp sau.</p>
+    <form th:action="@{/logout}" method="post"><button type="submit">Đăng xuất</button></form>
+  </main>
+</body>
+</html>

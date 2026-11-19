@@ -5,3 +5,8 @@ node_modules/
 .vscode/
 src/main/resources/static/js/
 src/main/resources/application-local.properties
+
+.env
+.env.*
+!.env.example
+*.log

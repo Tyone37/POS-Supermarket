@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Bán hàng')}"></head>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}"><aside th:replace="~{layout/pos :: sidebar}"></aside><button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button><div class="workspace"><header th:replace="~{layout/pos :: header}"></header>
+
+<main tabindex="-1" id="main-content" data-current-page="pos" class="page"><div class="pagehead"><div><div class="eyebrow">QUẦY THU NGÂN</div><h1>Bán hàng tại quầy</h1><p>Bắt đầu đơn bán hàng mới để quét mã hoặc chọn sản phẩm.</p></div></div><article class="card"><div class="empty"><h3>Sẵn sàng phục vụ khách hàng</h3><p>Mỗi đơn được lưu theo ca và thu ngân đang đăng nhập.</p><form th:action="@{/sales}" method="post"><input type="hidden" name="requestKey" th:value="${requestKey}"><button class="btn primary" type="submit"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tạo đơn hàng mới</button></form></div></article></main></div></div><th:block th:replace="~{layout/pos :: dialogs}"></th:block>
+</body>
+</html>

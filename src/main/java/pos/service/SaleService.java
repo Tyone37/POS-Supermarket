@@ -114,7 +114,25 @@ public class SaleService {
             updateQuantity(item, product, ((BigDecimal) item.get("quantity")).add(BigDecimal.ONE));
         } else {
             available(product, BigDecimal.ONE);
-            db.createItem(id, product);
+            long productId = PosSupport.id(product, "id");
+            var promoOpt = db.activePromotionForProduct(productId, PosSupport.now());
+            BigDecimal unitPrice = (BigDecimal) product.get("sale_price");
+            BigDecimal gross = unitPrice.multiply(BigDecimal.ONE).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal discount = BigDecimal.ZERO;
+            Long promoId = null;
+            String promoCode = null;
+            String promoName = null;
+
+            if (promoOpt.isPresent()) {
+                var promo = promoOpt.get();
+                promoId = PosSupport.id(promo, "id");
+                promoCode = (String) promo.get("code");
+                promoName = (String) promo.get("name");
+                BigDecimal percent = (BigDecimal) promo.get("discount_percent");
+                discount = gross.multiply(percent).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            }
+            BigDecimal lineTotal = gross.subtract(discount);
+            db.createItem(id, product, BigDecimal.ONE, discount, lineTotal, promoId, promoCode, promoName);
         }
         recalculate(id);
     }
@@ -127,16 +145,30 @@ public class SaleService {
     }
 
     private void updateQuantity(Map<String, Object> item, Map<String, Object> product, BigDecimal quantity) {
-        // shortcut: chưa có hợp đồng tính lại khuyến mãi; giữ nguyên dòng giảm giá đến khi tích hợp module đó.
-        if (item.get("promotion_id") != null || ((BigDecimal) item.get("discount_amount")).signum() != 0) {
-            throw new BusinessException("Chưa hỗ trợ đổi số lượng dòng có khuyến mãi. Có thể xóa dòng khỏi đơn.");
-        }
         available(product, quantity);
-        BigDecimal total = quantity.multiply((BigDecimal) item.get("unit_price")).setScale(2, RoundingMode.HALF_UP);
-        if (total.compareTo(new BigDecimal("9999999999999999")) > 0) {
+        BigDecimal unitPrice = (BigDecimal) item.get("unit_price");
+        BigDecimal gross = quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
+        if (gross.compareTo(new BigDecimal("9999999999999999")) > 0) {
             throw new BusinessException("Thành tiền vượt giới hạn dữ liệu.");
         }
-        db.quantity(PosSupport.id(item, "id"), quantity, total);
+
+        long productId = PosSupport.id(product, "id");
+        var promoOpt = db.activePromotionForProduct(productId, PosSupport.now());
+        BigDecimal discount = BigDecimal.ZERO;
+        Long promoId = null;
+        String promoCode = null;
+        String promoName = null;
+
+        if (promoOpt.isPresent()) {
+            var promo = promoOpt.get();
+            promoId = PosSupport.id(promo, "id");
+            promoCode = (String) promo.get("code");
+            promoName = (String) promo.get("name");
+            BigDecimal percent = (BigDecimal) promo.get("discount_percent");
+            discount = gross.multiply(percent).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        }
+        BigDecimal lineTotal = gross.subtract(discount);
+        db.updateItemPromotion(PosSupport.id(item, "id"), quantity, discount, lineTotal, promoId, promoCode, promoName);
     }
 
     @Transactional
@@ -231,6 +263,14 @@ public class SaleService {
         if (items.isEmpty()) {
             throw new BusinessException("Đơn hàng chưa có sản phẩm.");
         }
+        var now = PosSupport.now();
+        boolean priceChanged = refreshOrderPromotions(orderId, items, now);
+        if (priceChanged) {
+            order = ownedOrder(username, orderId);
+            items = db.items(orderId);
+            throw new BusinessException("Khuyến mãi đã thay đổi hiệu lực. Đơn hàng đã được tính lại tổng mới ("
+                    + order.get("total_amount") + " VNĐ). Vui lòng xác nhận trước khi thanh toán.");
+        }
         checkTotals(order, items);
         BigDecimal due = (BigDecimal) order.get("total_amount");
         if (received.compareTo(due) < 0 || (reference != null && received.compareTo(due) != 0)) {
@@ -239,7 +279,6 @@ public class SaleService {
         if (reference != null && db.referenceExists(reference)) {
             throw new BusinessException("Mã tham chiếu đã được sử dụng cho giao dịch khác.");
         }
-        var now = PosSupport.now();
         for (var item : items) {
             var product = db.product(PosSupport.id(item, "product_id"), true).orElseThrow();
             if (!"ACTIVE".equals(product.get("status"))) {
@@ -254,6 +293,45 @@ public class SaleService {
                 reference, actor, now);
         db.markPaid(orderId, now);
         return db.createInvoice(orderId, payment, actor, PosSupport.number("HD-"), now);
+    }
+
+    private boolean refreshOrderPromotions(long orderId, List<Map<String, Object>> items, Object now) {
+        boolean changed = false;
+        for (var item : items) {
+            long productId = PosSupport.id(item, "product_id");
+            var promoOpt = db.activePromotionForProduct(productId, now);
+            BigDecimal quantity = (BigDecimal) item.get("quantity");
+            BigDecimal unitPrice = (BigDecimal) item.get("unit_price");
+            BigDecimal gross = quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
+
+            BigDecimal newDiscount = BigDecimal.ZERO;
+            Long newPromoId = null;
+            String newPromoCode = null;
+            String newPromoName = null;
+
+            if (promoOpt.isPresent()) {
+                var promo = promoOpt.get();
+                newPromoId = PosSupport.id(promo, "id");
+                newPromoCode = (String) promo.get("code");
+                newPromoName = (String) promo.get("name");
+                BigDecimal percent = (BigDecimal) promo.get("discount_percent");
+                newDiscount = gross.multiply(percent).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            }
+            BigDecimal newLineTotal = gross.subtract(newDiscount);
+
+            Long oldPromoId = item.get("promotion_id") == null ? null : PosSupport.id(item, "promotion_id");
+            BigDecimal oldDiscount = (BigDecimal) item.get("discount_amount");
+
+            if (!java.util.Objects.equals(oldPromoId, newPromoId) || oldDiscount.compareTo(newDiscount) != 0) {
+                db.updateItemPromotion(PosSupport.id(item, "id"), quantity, newDiscount, newLineTotal,
+                        newPromoId, newPromoCode, newPromoName);
+                changed = true;
+            }
+        }
+        if (changed) {
+            recalculate(orderId);
+        }
+        return changed;
     }
 
     private void checkTotals(Map<String, Object> order, List<Map<String, Object>> items) {

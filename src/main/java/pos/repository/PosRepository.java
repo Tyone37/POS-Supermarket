@@ -27,6 +27,7 @@ import pos.entity.OrderItemEntity;
 import pos.entity.PaymentEntity;
 import pos.entity.InvoiceEntity;
 import pos.entity.InventoryMovementEntity;
+import pos.entity.PromotionEntity;
 
 @Repository
 @Transactional
@@ -213,12 +214,41 @@ public class PosRepository {
                 }).toList();
     }
     public void createItem(long order, Map<String, Object> product) {
+        createItem(order, product, BigDecimal.ONE, BigDecimal.ZERO, (BigDecimal) product.get("sale_price"), null, null, null);
+    }
+    public void createItem(long order, Map<String, Object> product, Object quantity, Object discount, Object lineTotal,
+                           Long promotionId, String promoCode, String promoName) {
         var i = new OrderItemEntity();
         i.setOrderId(order); i.setProductId(((Number) product.get("id")).longValue());
         i.setProductCodeSnapshot((String) product.get("code")); i.setProductNameSnapshot((String) product.get("name"));
         i.setBarcodeSnapshot((String) product.get("barcode")); i.setUnitCodeSnapshot((String) product.get("unit_code"));
-        i.setQuantity(BigDecimal.ONE); i.setUnitPrice((BigDecimal) product.get("sale_price"));
-        i.setLineTotal(i.getUnitPrice()); i.setDiscountAmount(BigDecimal.ZERO); em.persist(i);
+        i.setQuantity((BigDecimal) quantity); i.setUnitPrice((BigDecimal) product.get("sale_price"));
+        i.setDiscountAmount((BigDecimal) discount); i.setLineTotal((BigDecimal) lineTotal);
+        i.setPromotionId(promotionId);
+        i.setPromotionCodeSnapshot(promoCode);
+        i.setPromotionNameSnapshot(promoName);
+        em.persist(i);
+    }
+    public void updateItemPromotion(long id, Object quantity, Object discount, Object total,
+                                    Long promotionId, String promoCode, String promoName) {
+        var i = em.find(OrderItemEntity.class, id);
+        i.setQuantity((BigDecimal) quantity);
+        i.setDiscountAmount((BigDecimal) discount);
+        i.setLineTotal((BigDecimal) total);
+        i.setPromotionId(promotionId);
+        i.setPromotionCodeSnapshot(promoCode);
+        i.setPromotionNameSnapshot(promoName);
+    }
+    public Optional<Map<String, Object>> activePromotionForProduct(long productId, Object now) {
+        return query("select p from PromotionEntity p, PromotionProductEntity pp "
+                + "where p.id = pp.promotionId and pp.productId = :productId "
+                + "and p.lifecycleStatus = 'ENABLED' and p.startsAt <= :now and p.endsAt >= :now "
+                + "order by p.discountPercent desc, p.id desc",
+                PromotionEntity.class, "productId", productId, "now", now)
+                .setMaxResults(1).getResultList().stream().findFirst().map(this::map);
+    }
+    public Optional<Map<String, Object>> promotion(long id) {
+        return find(PromotionEntity.class, id, false).map(this::map);
     }
     public void quantity(long id, Object quantity, Object total) {
         var i = em.find(OrderItemEntity.class, id); i.setQuantity((BigDecimal) quantity); i.setLineTotal((BigDecimal) total);
@@ -411,6 +441,17 @@ public class PosRepository {
                 "confirmed_at", value.getConfirmedAt(),
                 "created_at", value.getCreatedAt(),
                 "completed_at", value.getCompletedAt());
+    }
+
+    private Map<String, Object> map(PromotionEntity value) {
+        return row("id", value.getId(),
+                "code", value.getCode(),
+                "name", value.getName(),
+                "discount_percent", value.getDiscountPercent(),
+                "starts_at", value.getStartsAt(),
+                "ends_at", value.getEndsAt(),
+                "lifecycle_status", value.getLifecycleStatus(),
+                "canceled_at", value.getCanceledAt());
     }
 
     private Map<String, Object> map(InvoiceEntity value) {

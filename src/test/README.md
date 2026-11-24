@@ -1,7 +1,7 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 139 ca hiện có và thêm 82 ca SCRUM-50; tổng cộng 221 ca.
+Giữ nguyên 221 ca hiện có và thêm 45 ca SCRUM-51; tổng cộng 266 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -27,6 +27,9 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-50 | Kết thúc/đối soát ca | `service/Scrum50KetThucCaTest.java` | 51 |
 | SCRUM-50 | Form, xác nhận, CSRF và quyền | `controller/Scrum50KetThucCaViewTest.java` | 27 |
 | SCRUM-50 | Lưu snapshot entity, không dùng database | `repository/Scrum50LuuKetQuaCaTest.java` | 4 |
+| SCRUM-51 | Chặn giao dịch trên ca đã đóng | `service/Scrum51KhoaCaTest.java` | 27 |
+| SCRUM-51 | Giữ nguyên trạng thái và số liệu chốt | `entity/Scrum51BatBienCaTest.java` | 7 |
+| SCRUM-51 | Điều hướng, thanh toán muộn và xem lịch sử | `controller/Scrum51KhoaCaViewTest.java` | 11 |
 
 `controller/SecurityTestSupport.java` chỉ chứa cấu hình MockMvc và dữ liệu tài khoản dùng chung,
 không có hàm `@Test`. Ba file SCRUM-24/25/26 sử dụng cấu hình này. SCRUM-24 giữ cả test xác thực
@@ -45,6 +48,14 @@ tiền mặt/chuyển khoản, hoàn tiền mặt và chênh lệch; số liệu
 thiếu xác nhận/CSRF và sửa số tiền từ client. Test lưu entity dùng EntityManager mock, không thêm H2.
 AC5 cần nghiệm thu thêm bằng các khoản hoàn thật trên DB thử riêng theo thiết kế.
 
+SCRUM-51 kiểm tra CLOSED với DRAFT/PENDING/PAID/CANCELLED và CASH/BANK_TRANSFER;
+replay payment/order/failed attempt, ca đổi trạng thái sau lượt đọc đầu, ca mới không nhận đơn cũ;
+không gọi trừ tồn, inventory movement, payment, PAID hoặc invoice khi bị từ chối.
+Kiểm tra chuỗi đóng ca → thanh toán muộn → gửi lại đóng ca giữ nguyên snapshot;
+setter entity không sửa tiền đầu ca/giờ kết thúc/trạng thái CLOSED.
+MockMvc dùng Security thật và xác minh HTTP 400, redirect mở ca và GET hóa đơn cũ.
+Test mock không chứng minh khóa/rollback thực tế khi nhiều kết nối MySQL chạy đồng thời.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -58,6 +69,7 @@ mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
 mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
 mvn.cmd -B "-Dtest=Scrum50KetThucCaTest,Scrum50KetThucCaViewTest,Scrum50LuuKetQuaCaTest" test
+mvn.cmd -B "-Dtest=Scrum51*" test
 ```
 
 Kết quả trong `target/surefire-reports`, tách theo tên file/story.

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import pos.dto.ShiftInvoice;
+import pos.dto.ShiftClosePreview;
 import pos.entity.AccountEntity;
 import pos.entity.RoleEntity;
 import pos.entity.EmployeeEntity;
@@ -178,6 +179,25 @@ public class PosRepository {
                     var result = productRow((ProductEntity) values[0], (UnitEntity) values[2]);
                     result.put("category_name", values[1]); return result;
                 }).toList();
+    }
+
+    public void closeShift(ShiftClosePreview closing, Timestamp closedAt) {
+        var shift = em.find(ShiftEntity.class, closing.shiftId());
+        shift.close(closedAt, closing.revenue(), closing.cashSales(), closing.cashRefunds(),
+                closing.expectedCash(), closing.actualCash(), closing.difference());
+        em.flush();
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal completedCashRefunds(long shiftId, long accountId) {
+        return query("""
+                select coalesce(sum(p.refundAmount), 0)
+                from RefundPaymentEntity p, ReturnReceiptEntity r, ShiftEntity s, EmployeeEntity e
+                where p.returnReceiptId = r.id and p.shiftId = s.id and s.employeeId = e.id
+                  and s.id = :shiftId and s.status = 'OPEN' and e.accountId = :accountId
+                  and p.confirmedBy = :accountId and r.status = 'COMPLETED'
+                  and p.status = 'SUCCESS' and p.method = 'CASH'
+                """, BigDecimal.class, "shiftId", shiftId, "accountId", accountId).getSingleResult();
     }
     private Map<String, Object> productRow(ProductEntity p, UnitEntity u) {
         var result = map(p); result.put("unit_code", u.getCode()); result.put("unit_name", u.getName());
@@ -352,7 +372,13 @@ public class PosRepository {
                 "open_request_key", value.getOpenRequestKey(),
                 "opened_at", value.getOpenedAt(),
                 "closed_at", value.getClosedAt(),
-                "opening_cash", value.getOpeningCash());
+                "opening_cash", value.getOpeningCash(),
+                "closing_revenue", value.getClosingRevenue(),
+                "closing_cash_sales", value.getClosingCashSales(),
+                "closing_cash_refunds", value.getClosingCashRefunds(),
+                "closing_expected_cash", value.getClosingExpectedCash(),
+                "closing_actual_cash", value.getClosingActualCash(),
+                "closing_difference", value.getClosingDifference());
     }
 
     private Map<String, Object> map(ProductCategoryEntity value) {

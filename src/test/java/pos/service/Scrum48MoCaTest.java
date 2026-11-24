@@ -40,6 +40,7 @@ class Scrum48MoCaTest {
         when(db.registers()).thenReturn(List.of(Map.of("id", 20L)));
     }
 
+    // Mở ca với tiền đầu ca hợp lệ.
     @Test
     void moCaVoiTienHopLe() {
         when(db.createShift(anyString(), anyLong(), anyLong(), any(), anyString(), any()))
@@ -48,12 +49,14 @@ class Scrum48MoCaTest {
         assertEquals(30L, id);
     }
 
+    // Từ chối tiền đầu ca âm.
     @Test
     void moCaVoiTienAm() {
         assertThrows(
                 BusinessException.class, () -> service.open("cashier", 20L, "-1", "open-key-123"));
     }
 
+    // Yêu cầu chọn quầy khi mở ca.
     @Test
     void moCaChuaChonQuay() {
         assertThrows(
@@ -61,6 +64,7 @@ class Scrum48MoCaTest {
                 () -> service.open("cashier", null, "500000", "open-key-123"));
     }
 
+    // Từ chối tiền đầu ca chứa chữ.
     @Test
     void moCaNhapChuVaoTienDauCa() {
         BusinessException error =
@@ -70,12 +74,14 @@ class Scrum48MoCaTest {
         assertTrue(error.getMessage().contains("Tiền đầu ca"));
     }
 
+    // Từ chối tiền đầu ca trống.
     @Test
     void moCaBoTrongTienDauCa() {
         assertThrows(
                 BusinessException.class, () -> service.open("cashier", 20L, "", "open-key-123"));
     }
 
+    // Từ chối tiền đầu ca có phần lẻ.
     @Test
     void moCaNhapTienLe() {
         assertThrows(
@@ -83,6 +89,7 @@ class Scrum48MoCaTest {
                 () -> service.open("cashier", 20L, "500.5", "open-key-123"));
     }
 
+    // Cho phép mở ca với tiền đầu ca bằng không.
     @Test
     void moCaVoiKhongDong() {
         when(db.createShift(anyString(), anyLong(), anyLong(), any(), anyString(), any()))
@@ -98,6 +105,7 @@ class Scrum48MoCaTest {
                         any());
     }
 
+    // Từ chối quầy không tồn tại.
     @Test
     void moCaQuayKhongTonTai() {
         assertThrows(
@@ -106,6 +114,7 @@ class Scrum48MoCaTest {
                 .createShift(anyString(), anyLong(), anyLong(), any(), anyString(), any());
     }
 
+    // Từ chối quầy đã ngừng hoạt động.
     @Test
     void moCaQuayDaNgungHoatDong() {
         // Repository chỉ trả quầy đang hoạt động, quầy 20 đã bị loại khỏi danh sách.
@@ -114,6 +123,7 @@ class Scrum48MoCaTest {
                 BusinessException.class, () -> service.open("cashier", 20L, "0", "open-key-123"));
     }
 
+    // Từ chối mở thêm khi đang có ca mở.
     @Test
     void moCaKhiDangCoCaMo() {
         when(db.latestShift(10L)).thenReturn(Optional.of(Map.of("id", 30L, "status", "OPEN")));
@@ -122,6 +132,7 @@ class Scrum48MoCaTest {
                 .createShift(anyString(), anyLong(), anyLong(), any(), anyString(), any());
     }
 
+    // Gửi lại yêu cầu không tạo thêm ca.
     @Test
     void guiLaiYeuCauMoCaKhongTaoThemCa() {
         when(db.shiftByKey("open-key-123"))
@@ -142,6 +153,7 @@ class Scrum48MoCaTest {
                 .createShift(anyString(), anyLong(), anyLong(), any(), anyString(), any());
     }
 
+    // Từ chối mở ca khi thiếu hồ sơ nhân viên.
     @Test
     void moCaThieuHoSoNhanVien() {
         when(db.employee(1L)).thenReturn(Optional.empty());
@@ -149,6 +161,7 @@ class Scrum48MoCaTest {
                 BusinessException.class, () -> service.open("cashier", 20L, "0", "open-key-123"));
     }
 
+    // Chặn quản lý mở ca.
     @Test
     void quanLyKhongDuocMoCa() {
         when(db.account("manager", true))

@@ -84,6 +84,7 @@ class Scrum44XemHoaDonTest {
                                         0)));
     }
 
+    // Xem hóa đơn của chính mình.
     @Test
     void xemHoaDonCuaMinh() {
         Map<String, Object> invoice =
@@ -94,11 +95,13 @@ class Scrum44XemHoaDonTest {
         assertEquals(db.items(10L), result.get("items"));
     }
 
+    // Báo lỗi khi hóa đơn không tồn tại.
     @Test
     void xemHoaDonKhongTonTai() {
         assertThrows(BusinessException.class, () -> service.invoice("cashier", 999L));
     }
 
+    // Chặn xem hóa đơn của thu ngân khác.
     @Test
     void khongDuocXemHoaDonCuaThuNganKhac() {
         when(db.invoice(50L))

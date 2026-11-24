@@ -30,11 +30,13 @@ class Scrum47XemTrangThaiCaTest {
         when(db.registers()).thenReturn(List.of(Map.of("id", 20L)));
     }
 
+    // Kiểm tra trạng thái khi chưa có ca.
     @Test
     void xemKhiChuaCoCa() {
         assertTrue(service.current("cashier").isEmpty());
     }
 
+    // Xem thông tin ca đang mở.
     @Test
     void xemCaDangMo() {
         Map<String, Object> shift = Map.of("id", 30L, "status", "OPEN");
@@ -42,6 +44,7 @@ class Scrum47XemTrangThaiCaTest {
         assertEquals(shift, service.current("cashier").orElseThrow());
     }
 
+    // Xem thông tin ca đã đóng.
     @Test
     void xemCaDaDong() {
         Map<String, Object> shift = Map.of("id", 30L, "status", "CLOSED");

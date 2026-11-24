@@ -83,6 +83,7 @@ class Scrum35ThemSanPhamVaoDonTest {
                                         0)));
     }
 
+    // Từ chối thêm mã sản phẩm không tồn tại.
     @Test
     void themMaSanPhamKhongTonTai() {
         assertThrows(BusinessException.class, () -> service.add("cashier", 10L, "ma-sai"));

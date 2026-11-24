@@ -89,12 +89,14 @@ class Scrum40HuyDonTest {
                                         0)));
     }
 
+    // Hủy đơn khi đã xác nhận.
     @Test
     void huyDonDaXacNhan() {
         service.cancel("cashier", 10L, "Khách đổi ý", true);
         verify(db).cancel(eq(10L), eq("Khách đổi ý"), any());
     }
 
+    // Từ chối hủy đơn khi chưa xác nhận.
     @Test
     void huyDonChuaXacNhan() {
         assertThrows(

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpSession;
 
 class Scrum25DangXuatTest extends SecurityTestSupport {
+    // Hủy phiên và xóa cookie khi đăng xuất.
     @Test
     void dangXuatHuyPhienVaXoaCookie() throws Exception {
         var result =
@@ -40,12 +41,14 @@ class Scrum25DangXuatTest extends SecurityTestSupport {
                 .andExpect(unauthenticated());
     }
 
+    // Từ chối đăng xuất khi thiếu CSRF token.
     @Test
     void dangXuatKhongCoCsrfBiTuChoi() throws Exception {
         mvc.perform(post("/logout").with(user("cashier").roles("CASHIER")))
                 .andExpect(status().isForbidden());
     }
 
+    // Hiển thị thông báo đăng xuất.
     @Test
     void giaoDienHienThongBaoDangXuat() throws Exception {
         mvc.perform(get("/login").param("logout", ""))

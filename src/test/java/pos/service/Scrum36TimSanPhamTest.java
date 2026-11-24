@@ -31,6 +31,7 @@ class Scrum36TimSanPhamTest {
         when(db.categories()).thenReturn(List.of(Map.of("id", 2L, "code", "UNCLASSIFIED")));
     }
 
+    // Tìm sản phẩm bằng tên không dấu.
     @Test
     void timSanPhamTheoTenKhongDau() {
         Map<String, Object> product =
@@ -39,6 +40,7 @@ class Scrum36TimSanPhamTest {
         assertEquals(List.of(product), service.search("sua", null, true));
     }
 
+    // Tìm sản phẩm bằng mã SKU.
     @Test
     void timSanPhamBangSku() {
         Map<String, Object> product = Map.of("code", "SP001", "name", "Sữa", "status", "ACTIVE");
@@ -46,6 +48,7 @@ class Scrum36TimSanPhamTest {
         assertEquals(List.of(product), service.search("sp001", null, true));
     }
 
+    // Kiểm tra tìm kiếm không có kết quả.
     @Test
     void timSanPhamKhongCoKetQua() {
         when(db.products(null))
@@ -53,6 +56,7 @@ class Scrum36TimSanPhamTest {
         assertTrue(service.search("banh", null, true).isEmpty());
     }
 
+    // Lọc sản phẩm theo nhóm hàng.
     @Test
     void timSanPhamTheoNhomHang() {
         Map<String, Object> product = Map.of("code", "SP001", "name", "Sữa", "status", "ACTIVE");

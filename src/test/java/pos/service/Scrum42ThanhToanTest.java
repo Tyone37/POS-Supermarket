@@ -93,6 +93,7 @@ class Scrum42ThanhToanTest {
                                         0)));
     }
 
+    // Thanh toán tiền mặt và tính tiền thừa.
     @Test
     void thanhToanTienMatHopLeVaTinhTienThua() {
         when(db.createInvoice(anyLong(), anyLong(), anyLong(), anyString(), any())).thenReturn(50L);
@@ -112,6 +113,7 @@ class Scrum42ThanhToanTest {
                         any());
     }
 
+    // Từ chối thanh toán khi khách đưa thiếu tiền.
     @Test
     void thanhToanKhachDuaThieuTien() {
         Forms.Payment form = new Forms.Payment("CASH", "30000", null, "pay-key-123", false);
@@ -119,6 +121,7 @@ class Scrum42ThanhToanTest {
         verify(db, never()).markPaid(anyLong(), any());
     }
 
+    // Từ chối chuyển khoản chưa xác nhận nhận tiền.
     @Test
     void chuyenKhoanChuaXacNhanNhanTien() {
         Forms.Payment form =
@@ -126,6 +129,7 @@ class Scrum42ThanhToanTest {
         assertThrows(BusinessException.class, () -> service.pay("cashier", 10L, form));
     }
 
+    // Từ chối tiền khách đưa chứa chữ.
     @Test
     void thanhToanNhapChuVaoTienKhachDua() {
         Forms.Payment form = new Forms.Payment("CASH", "abc", null, "pay-key-123", false);
@@ -135,6 +139,7 @@ class Scrum42ThanhToanTest {
         verify(db, never()).markPaid(anyLong(), any());
     }
 
+    // Từ chối tiền khách đưa trống.
     @Test
     void thanhToanBoTrongTienKhachDua() {
         Forms.Payment form = new Forms.Payment("CASH", "", null, "pay-key-123", false);

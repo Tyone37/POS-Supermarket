@@ -37,6 +37,7 @@ class Scrum28ThemSanPhamTest {
         when(db.categories()).thenReturn(List.of(Map.of("id", 2L, "code", "UNCLASSIFIED")));
     }
 
+    // Thêm sản phẩm với dữ liệu hợp lệ.
     @Test
     void themSanPhamHopLe() {
         Forms.Product form =
@@ -55,12 +56,14 @@ class Scrum28ThemSanPhamTest {
         assertEquals(20L, service.create("manager", form));
     }
 
+    // Từ chối giá bán âm.
     @Test
     void themSanPhamGiaAm() {
         Forms.Product form = new Forms.Product(null, "893001", "Sữa", null, null, "-1", "10", null);
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối tồn kho âm.
     @Test
     void themSanPhamTonKhoAm() {
         Forms.Product form =
@@ -68,6 +71,7 @@ class Scrum28ThemSanPhamTest {
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối tên sản phẩm trống.
     @Test
     void themSanPhamBoTrongTen() {
         Forms.Product form = new Forms.Product(null, "893001", "", null, null, "20000", "10", null);
@@ -76,6 +80,7 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Tên sản phẩm"));
     }
 
+    // Từ chối mã vạch trống.
     @Test
     void themSanPhamBoTrongMaVach() {
         Forms.Product form = new Forms.Product(null, "", "Sữa", null, null, "20000", "10", null);
@@ -84,6 +89,7 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Mã vạch"));
     }
 
+    // Từ chối giá bán chứa chữ.
     @Test
     void themSanPhamNhapChuVaoGia() {
         Forms.Product form =
@@ -93,12 +99,14 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Đơn giá"));
     }
 
+    // Từ chối giá bán bằng không.
     @Test
     void themSanPhamGiaBangKhong() {
         Forms.Product form = new Forms.Product(null, "893001", "Sữa", null, null, "0", "10", null);
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối tồn kho chứa chữ.
     @Test
     void themSanPhamNhapChuVaoTonKho() {
         Forms.Product form =
@@ -108,6 +116,7 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Tồn kho"));
     }
 
+    // Từ chối mã vạch bị trùng.
     @Test
     void themSanPhamMaVachTrung() {
         when(db.products(null)).thenReturn(List.of(Map.of("code", "SP001", "barcode", "893001")));
@@ -118,12 +127,14 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("đã tồn tại"));
     }
 
+    // Từ chối giá bán trống.
     @Test
     void themSanPhamGiaBoTrong() {
         Forms.Product form = new Forms.Product(null, "893001", "Sữa", null, null, "", "10", null);
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối giá bán vượt giới hạn.
     @Test
     void themSanPhamGiaVuotGioiHan() {
         Forms.Product form =
@@ -132,6 +143,7 @@ class Scrum28ThemSanPhamTest {
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối tồn kho trống.
     @Test
     void themSanPhamTonKhoBoTrong() {
         Forms.Product form =
@@ -139,6 +151,7 @@ class Scrum28ThemSanPhamTest {
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối tồn kho vượt giới hạn.
     @Test
     void themSanPhamTonKhoVuotGioiHan() {
         Forms.Product form =
@@ -147,6 +160,7 @@ class Scrum28ThemSanPhamTest {
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối nhóm hàng không hợp lệ.
     @Test
     void themSanPhamNhomHangKhongHopLe() {
         Forms.Product form =
@@ -156,6 +170,7 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Nhóm hàng"));
     }
 
+    // Từ chối đơn vị không hợp lệ.
     @Test
     void themSanPhamDonViKhongHopLe() {
         Forms.Product form =
@@ -165,6 +180,7 @@ class Scrum28ThemSanPhamTest {
         assertTrue(error.getMessage().contains("Đơn vị"));
     }
 
+    // Từ chối ảnh không dùng HTTPS.
     @Test
     void themSanPhamAnhKhongPhaiHttps() {
         Forms.Product form =
@@ -180,6 +196,7 @@ class Scrum28ThemSanPhamTest {
         assertThrows(BusinessException.class, () -> service.create("manager", form));
     }
 
+    // Từ chối địa chỉ ảnh không hợp lệ.
     @Test
     void themSanPhamAnhKhongPhaiUrl() {
         Forms.Product form =

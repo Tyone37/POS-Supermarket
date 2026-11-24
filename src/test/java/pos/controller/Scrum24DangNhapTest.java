@@ -53,6 +53,7 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
         when(loginAccounts.findByUsername("cashier")).thenReturn(Optional.of(cashier));
     }
 
+    // Đăng nhập với tài khoản và mật khẩu đúng.
     @Test
     void dangNhapDungTaiKhoanVaMatKhau() {
         var request = UsernamePasswordAuthenticationToken.unauthenticated("cashier", "demo123");
@@ -61,30 +62,35 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
         assertEquals("cashier", result.getName());
     }
 
+    // Từ chối mật khẩu sai.
     @Test
     void dangNhapSaiMatKhau() {
         var request = UsernamePasswordAuthenticationToken.unauthenticated("cashier", "saimatkhau");
         assertThrows(BadCredentialsException.class, () -> login.authenticate(request));
     }
 
+    // Từ chối tài khoản không tồn tại.
     @Test
     void dangNhapTaiKhoanKhongTonTai() {
         var request = UsernamePasswordAuthenticationToken.unauthenticated("khongtontai", "demo123");
         assertThrows(BadCredentialsException.class, () -> login.authenticate(request));
     }
 
+    // Từ chối mật khẩu trống.
     @Test
     void dangNhapBoTrongMatKhau() {
         var request = UsernamePasswordAuthenticationToken.unauthenticated("cashier", "");
         assertThrows(BadCredentialsException.class, () -> login.authenticate(request));
     }
 
+    // Từ chối tên đăng nhập trống.
     @Test
     void dangNhapBoTrongTenTaiKhoan() {
         var request = UsernamePasswordAuthenticationToken.unauthenticated("", "demo123");
         assertThrows(BadCredentialsException.class, () -> login.authenticate(request));
     }
 
+    // Từ chối tài khoản đã khóa.
     @Test
     void dangNhapTaiKhoanDaKhoa() {
         Account locked =
@@ -101,6 +107,7 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
         assertThrows(DisabledException.class, () -> login.authenticate(request));
     }
 
+    // Chuyển đến trang báo lỗi khi sai mật khẩu.
     @Test
     void saiMatKhauChuyenVeTrangBaoLoi() throws Exception {
         mvc.perform(
@@ -112,6 +119,7 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
                 .andExpect(unauthenticated());
     }
 
+    // Chuyển đến trang báo lỗi khi tài khoản bị khóa.
     @Test
     void taiKhoanKhoaChuyenVeTrangBaoLoi() throws Exception {
         mvc.perform(
@@ -123,6 +131,7 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
                 .andExpect(unauthenticated());
     }
 
+    // Hiển thị lỗi sai thông tin đăng nhập.
     @Test
     void giaoDienHienLoiSaiThongTinDangNhap() throws Exception {
         mvc.perform(get("/login").param("error", "invalid"))
@@ -134,6 +143,7 @@ class Scrum24DangNhapTest extends SecurityTestSupport {
                                                 "Tên đăng nhập hoặc mật khẩu không chính xác")));
     }
 
+    // Hiển thị lỗi tài khoản bị khóa.
     @Test
     void giaoDienHienLoiTaiKhoanKhoa() throws Exception {
         mvc.perform(get("/login").param("error", "locked"))

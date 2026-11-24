@@ -91,6 +91,7 @@ class Scrum43TaoHoaDonTest {
                                         0)));
     }
 
+    // Tạo hóa đơn sau khi thanh toán thành công.
     @Test
     void taoHoaDonSauThanhToanThanhCong() {
         when(db.createInvoice(anyLong(), anyLong(), anyLong(), anyString(), any())).thenReturn(50L);
@@ -99,6 +100,7 @@ class Scrum43TaoHoaDonTest {
         verify(db).createInvoice(eq(10L), anyLong(), eq(1L), startsWith("HD-"), any());
     }
 
+    // Không tạo hóa đơn khi khách đưa thiếu tiền.
     @Test
     void khongTaoHoaDonKhiKhachDuaThieuTien() {
         Forms.Payment form = new Forms.Payment("CASH", "30000", null, "pay-key-123", false);

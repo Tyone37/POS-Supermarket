@@ -88,12 +88,14 @@ class Scrum37DieuChinhSoLuongTest {
                                         0)));
     }
 
+    // Từ chối số lượng âm.
     @Test
     void nhapSoLuongAm() {
         assertThrows(
                 BusinessException.class, () -> service.quantity("cashier", 10L, 30L, "-1", false));
     }
 
+    // Từ chối số lượng chứa chữ.
     @Test
     void nhapChuVaoSoLuong() {
         BusinessException error =
@@ -104,6 +106,7 @@ class Scrum37DieuChinhSoLuongTest {
         verify(db, never()).quantity(anyLong(), any(), any());
     }
 
+    // Từ chối số lượng trống.
     @Test
     void boTrongSoLuong() {
         assertThrows(
@@ -111,6 +114,7 @@ class Scrum37DieuChinhSoLuongTest {
         verify(db, never()).quantity(anyLong(), any(), any());
     }
 
+    // Từ chối số lượng lẫn số và chữ.
     @Test
     void nhapSoLuongVuaSoVuaChu() {
         assertThrows(
@@ -119,6 +123,7 @@ class Scrum37DieuChinhSoLuongTest {
         verify(db, never()).quantity(anyLong(), any(), any());
     }
 
+    // Từ chối số lượng lẻ cho hàng bán theo cái.
     @Test
     void nhapSoLuongLeChoHangBanTheoCai() {
         assertThrows(
@@ -126,6 +131,7 @@ class Scrum37DieuChinhSoLuongTest {
         verify(db, never()).quantity(anyLong(), any(), any());
     }
 
+    // Từ chối số lượng vượt tồn kho.
     @Test
     void nhapSoLuongVuotTonKho() {
         BusinessException error =
@@ -136,6 +142,7 @@ class Scrum37DieuChinhSoLuongTest {
         verify(db, never()).quantity(anyLong(), any(), any());
     }
 
+    // Yêu cầu xác nhận xóa khi số lượng bằng không.
     @Test
     void nhapSoLuongKhongChuaXacNhanXoa() {
         assertThrows(

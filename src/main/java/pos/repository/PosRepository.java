@@ -14,6 +14,7 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import pos.dto.ShiftInvoice;
 import pos.entity.AccountEntity;
 import pos.entity.RoleEntity;
 import pos.entity.EmployeeEntity;
@@ -135,6 +136,26 @@ public class PosRepository {
     public Optional<Map<String, Object>> shiftByKey(String key) {
         return query("select s from ShiftEntity s where s.openRequestKey=:key", ShiftEntity.class, "key", key)
                 .setMaxResults(1).getResultList().stream().findFirst().map(this::map);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShiftInvoice> completedShiftInvoices(long shiftId, long accountId) {
+        return query("""
+                select i, p.method
+                from InvoiceEntity i, PaymentEntity p, OrderEntity o, ShiftEntity s, EmployeeEntity e
+                where i.paymentId = p.id and p.orderId = o.id and i.orderId = o.id
+                  and o.shiftId = s.id and s.employeeId = e.id
+                  and s.id = :shiftId and s.status = 'OPEN'
+                  and e.accountId = :accountId and i.issuedBy = :accountId
+                  and i.status = 'ISSUED' and o.status = 'PAID' and p.status = 'SUCCESS'
+                order by i.issuedAt desc, i.id desc
+                """, Object[].class, "shiftId", shiftId, "accountId", accountId)
+                .getResultList().stream().map(values -> {
+                    var invoice = (InvoiceEntity) values[0];
+                    return new ShiftInvoice(invoice.getId(), invoice.getInvoiceNo(),
+                            invoice.getCashierNameSnapshot(), invoice.getIssuedAt(),
+                            invoice.getTotalAmount(), (String) values[1]);
+                }).toList();
     }
     public Optional<Map<String, Object>> shift(long id) {
         return find(ShiftEntity.class, id, true).map(s -> {

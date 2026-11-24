@@ -1,7 +1,7 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 90 ca đã có và thêm 5 ca cơ bản cho hai story hóa đơn; tổng cộng 95 ca.
+Giữ nguyên 95 ca hiện có và thêm 44 ca cho tóm tắt ca; tổng cộng 139 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -22,11 +22,20 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-44 | U4.2 Xem hóa đơn | `service/Scrum44XemHoaDonTest.java` | 3 |
 | SCRUM-47 | US-CA-01 Xem trạng thái ca | `service/Scrum47XemTrangThaiCaTest.java` | 3 |
 | SCRUM-48 | US-CA-02 Mở ca | `service/Scrum48MoCaTest.java` | 13 |
+| SCRUM-49 | US-CA-03 Tóm tắt ca | `service/Scrum49TomTatCaTest.java` | 40 |
+| SCRUM-49 | Render trang và quyền tóm tắt ca | `controller/Scrum49TomTatCaViewTest.java` | 4 |
 
 `controller/SecurityTestSupport.java` chỉ chứa cấu hình MockMvc và dữ liệu tài khoản dùng chung,
 không có hàm `@Test`. Ba file SCRUM-24/25/26 sử dụng cấu hình này. SCRUM-24 giữ cả test xác thực
 trực tiếp và test request/HTML. Các file trong `service` là unit test với repository giả.
 Không kết nối MySQL hay thay đổi dữ liệu ứng dụng.
+`Scrum49TomTatCaTest` có 30 hàm `@Test` và 3 hàm `@ParameterizedTest` với tổng 10 bộ dữ liệu,
+tương ứng 40 ca chạy. Bao phủ ca rỗng, tiền mặt/chuyển khoản/kết hợp, tiền đầu ca,
+độ chính xác BigDecimal, tổng tiền lớn, 1.000 hóa đơn, ca qua nửa đêm, tải lại trang,
+chuyển ca, hai thu ngân, khóa/đổi vai trò và lỗi đọc dữ liệu tại từng bước.
+Test repository H2 đã được bỏ theo yêu cầu; dependency H2 cũng được xóa.
+Unit test chỉ kiểm tra tham số gọi repository và dữ liệu trả về giả lập,
+không thay thế kiểm thử JPQL, CHECK/FK/unique hoặc transaction trên MySQL riêng.
 
 Chạy toàn bộ:
 
@@ -39,6 +48,7 @@ Chạy riêng một story:
 ```powershell
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
+mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
 ```
 
 Kết quả trong `target/surefire-reports`, tách theo tên file/story.

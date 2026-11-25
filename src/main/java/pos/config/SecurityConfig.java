@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/products", "/products/**").hasRole("MANAGER")
                         .requestMatchers("/shifts/history", "/shifts/history/**").hasAnyRole("MANAGER", "ADMIN")
                         .requestMatchers("/shifts", "/shifts/**", "/sales", "/sales/**").hasRole("CASHIER")
-                        .requestMatchers("/invoices/**").hasAnyRole("CASHIER", "MANAGER", "ADMIN")
+                        .requestMatchers("/invoices", "/invoices/**").hasAnyRole("CASHIER", "MANAGER", "ADMIN")
                         .requestMatchers("/").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new ActiveAccountFilter(accounts), AuthorizationFilter.class)

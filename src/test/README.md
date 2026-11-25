@@ -1,13 +1,16 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 266 ca hiện có và thêm 67 ca SCRUM-52; tổng cộng 333 ca.
+Giữ nguyên 333 ca hiện có và thêm 60 ca SCRUM-45; tổng cộng 393 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
 
 | Jira | User story | File test | Số ca |
 |---|---|---|---:|
+| SCRUM-45 | Tìm/lọc hóa đơn, phạm vi tài khoản và phân trang | `service/Scrum45TraCuuHoaDonTest.java` | 36 |
+| SCRUM-45 | Render bộ lọc/kết quả, quyền HTTP và liên kết chi tiết | `controller/Scrum45TraCuuHoaDonViewTest.java` | 17 |
+| SCRUM-45 | Điều kiện JPQL, bind/escape mã và snapshot DTO | `repository/Scrum45TruyVanHoaDonTest.java` | 7 |
 | SCRUM-24 | US-DN-01 Đăng nhập | `controller/Scrum24DangNhapTest.java` | 10 |
 | SCRUM-25 | US-DN-02 Đăng xuất | `controller/Scrum25DangXuatTest.java` | 3 |
 | SCRUM-26 | US-DN-03 Phân quyền | `controller/Scrum26PhanQuyenTest.java` | 11 |
@@ -67,6 +70,17 @@ MockMvc dùng SecurityConfig và Thymeleaf thật. Test mock không chứng minh
 chi tiết 3 ca và liên kết 9 hóa đơn trả 200; CASHIER danh sách trả 403.
 Không tạo/sửa/đóng ca hay hóa đơn trong lượt smoke test này.
 
+SCRUM-45 kiểm tra 8 tổ hợp có/không có mã, phương thức, trạng thái; thu ngân chỉ truyền phạm vi chính mình,
+Quản lý/Admin xem toàn bộ; từ chối tài khoản khóa/không tồn tại/khác vai trò; ID/vai trò do client gửi
+không mở rộng phạm vi. Kiểm tra đầu vào sai, mã dài, trang âm/tràn, 0/1/20/21 kết quả;
+giữ số tiền/thứ tự trả về, phân trang giữ bộ lọc và đúng link chi tiết.
+Test repository dùng EntityManager mock, kiểm tra tham số và các điều kiện AND, escape `%`/`_`/`!`,
+không nối mã người dùng vào JPQL, không thêm H2 hoặc ghi dữ liệu.
+Smoke test trên MySQL local: MANAGER/ADMIN thấy 9 hóa đơn (8 CASH, 1 BANK_TRANSFER), CASHIER thấy 7 hóa đơn
+(6 CASH, 1 BANK_TRANSFER), hóa đơn khác người lập bị 403; mã đầy đủ viết thường khớp đúng 1 hóa đơn;
+mã không tồn tại/ký tự wildcard trả danh sách rỗng 200. VOID chưa có dữ liệu thực tế trong DB local,
+hiển thị chi tiết VOID được kiểm tra bằng MockMvc. Smoke chỉ tra cứu, không sửa hóa đơn.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -77,6 +91,7 @@ Chạy riêng một story:
 
 ```powershell
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
+mvn.cmd -B "-Dtest=Scrum45*" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
 mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
 mvn.cmd -B "-Dtest=Scrum50KetThucCaTest,Scrum50KetThucCaViewTest,Scrum50LuuKetQuaCaTest" test

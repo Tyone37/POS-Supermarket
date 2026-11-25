@@ -50,6 +50,18 @@ public class OrderEntity {
     @Column(name = "create_request_key", nullable = false, length = 64)
     private String createRequestKey;
 
+    @Column(name = "discount_mode", nullable = false, length = 20)
+    private String discountMode = "NONE";
+
+    @Column(name = "coupon_id")
+    private Long couponId;
+
+    @Column(name = "coupon_code_snapshot", length = 30)
+    private String couponCodeSnapshot;
+
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
     public OrderEntity() {
     }
 
@@ -148,4 +160,13 @@ public class OrderEntity {
     public void setCreateRequestKey(String createRequestKey) {
         this.createRequestKey = createRequestKey;
     }
+
+    public String getDiscountMode() { return discountMode; }
+    public void setDiscountMode(String discountMode) { this.discountMode = discountMode; }
+    public Long getCouponId() { return couponId; }
+    public void setCouponId(Long couponId) { this.couponId = couponId; }
+    public String getCouponCodeSnapshot() { return couponCodeSnapshot; }
+    public void setCouponCodeSnapshot(String couponCodeSnapshot) { this.couponCodeSnapshot = couponCodeSnapshot; }
+    public Long getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(Long approvedBy) { this.approvedBy = approvedBy; }
 }

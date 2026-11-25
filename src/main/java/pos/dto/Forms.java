@@ -13,4 +13,6 @@ public final class Forms {
     public record Payment(String method, String received, String reference, String requestKey, Boolean verified) { }
     public record Promotion(String code, String name, String discountPercent,
                             String startsAt, String endsAt, List<Long> productIds) { }
+    public record DirectDiscount(String scope, Long itemId, String type, String value,
+                                 boolean confirmed, String managerUsername, String managerPassword) { }
 }

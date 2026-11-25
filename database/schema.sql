@@ -136,6 +136,21 @@ CREATE TABLE promotion_products (
  FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE RESTRICT,
  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE coupons (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ code VARCHAR(30) NOT NULL UNIQUE,
+ name VARCHAR(200) NOT NULL,
+ discount_type VARCHAR(10) NOT NULL,
+ discount_value DECIMAL(18,2) NOT NULL,
+ min_order_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+ starts_at DATETIME(3) NOT NULL,
+ ends_at DATETIME(3) NOT NULL,
+ lifecycle_status VARCHAR(10) NOT NULL DEFAULT 'ENABLED',
+ CHECK (discount_type IN ('PERCENT', 'AMOUNT')),
+ CHECK ((discount_type='PERCENT' AND discount_value > 0 AND discount_value <= 100) OR (discount_type='AMOUNT' AND discount_value > 0)),
+ CHECK (starts_at < ends_at),
+ CHECK (lifecycle_status IN ('ENABLED', 'DISABLED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE orders (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  order_no VARCHAR(30) NOT NULL UNIQUE,
@@ -149,6 +164,10 @@ CREATE TABLE orders (
  cancelled_at DATETIME(3) NULL,
  cancellation_reason VARCHAR(255) NULL,
  create_request_key VARCHAR(64) NOT NULL UNIQUE,
+ discount_mode VARCHAR(20) NOT NULL DEFAULT 'NONE',
+ coupon_id BIGINT UNSIGNED NULL,
+ coupon_code_snapshot VARCHAR(30) NULL,
+ approved_by BIGINT UNSIGNED NULL,
  CHECK (status IN ('DRAFT','PENDING','PAID','CANCELLED')),
  CHECK (subtotal_amount >= 0 AND discount_amount >= 0 AND discount_amount <= subtotal_amount AND total_amount = subtotal_amount - discount_amount),
  CHECK ((status='PAID' AND paid_at IS NOT NULL) OR (status <> 'PAID' AND paid_at IS NULL)),
@@ -173,7 +192,6 @@ CREATE TABLE order_items (
  line_total DECIMAL(18,2) NOT NULL,
  UNIQUE KEY uq_item_product (order_id,product_id),
  CHECK (quantity > 0 AND unit_price > 0 AND discount_amount >= 0 AND discount_amount <= ROUND(quantity * unit_price, 2) AND line_total = ROUND(quantity * unit_price, 2) - discount_amount),
- CHECK ((promotion_id IS NULL AND promotion_code_snapshot IS NULL AND promotion_name_snapshot IS NULL AND discount_amount=0) OR (promotion_id IS NOT NULL AND promotion_code_snapshot IS NOT NULL AND promotion_name_snapshot IS NOT NULL)),
  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE RESTRICT,
  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
  FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE RESTRICT

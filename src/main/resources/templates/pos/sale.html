@@ -19,7 +19,54 @@
 <article class="card cart"><div class="cart-top"><div class="between"><h2>Đơn bán hàng</h2><span class="badge neutral" th:text="${order.status == 'DRAFT' ? 'Đang lập' : (order.status == 'PAID' ? 'Đã thanh toán' : 'Đã hủy')}"></span></div><p class="muted small" style="margin-top:5px" th:text="'Khách lẻ · ' + ${uiDisplayName}"></p></div>
 <div class="cart-items"><div class="cart-line" th:each="item : ${items}"><div class="mini-art"><img th:src="@{/img/product-placeholder.svg}" th:alt="${item.product_name_snapshot}"></div><div class="info"><div class="name" th:text="${item.product_name_snapshot}"></div><div class="price"><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(item.unit_price,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span><span th:text="' / ' + ${item.unit_code_snapshot}"></span><span th:if="${item.promotion_id != null}" class="badge success" style="margin-left:6px;font-size:11px" th:title="${item.promotion_name_snapshot}" th:text="'-' + ${#numbers.formatDecimal(item.discount_amount,1,'POINT',0,'COMMA')} + ' VNĐ (' + ${item.promotion_code_snapshot} + ')'"></span></div><form th:if="${editable}" th:action="@{/sales/{id}/quantity(id=${order.id})}" method="post" class="quantity-form quantity" th:data-confirm-url="@{/sales/{id}/remove/{item}(id=${order.id},item=${item.id})}"><input type="hidden" name="itemId" th:value="${item.id}"><button type="button" data-quantity-change="-1" th:aria-label="'Giảm số lượng ' + ${item.product_name_snapshot}">−</button><input type="number" name="quantity" min="0" th:step="${item.quantity_scale == 0 ? '1' : '0.001'}" th:value="${item.quantity.stripTrailingZeros().toPlainString()}" th:aria-label="'Số lượng ' + ${item.product_name_snapshot}" required><button type="button" data-quantity-change="1" th:aria-label="'Tăng số lượng ' + ${item.product_name_snapshot}">+</button><button type="submit" class="quantity-save" title="Cập nhật số lượng">Lưu</button></form><span th:if="${!editable}" th:text="${item.quantity.stripTrailingZeros().toPlainString()}"></span></div><div class="amount number"><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(item.line_total,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span><a class="remove" th:if="${editable}" th:href="@{/sales/{id}/remove/{item}(id=${order.id},item=${item.id})}" th:aria-label="'Xóa ' + ${item.product_name_snapshot}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></a></div></div><div class="empty" th:if="${#lists.isEmpty(items)}"><h3>Giỏ hàng đang trống</h3><p>Quét mã vạch hoặc chọn sản phẩm ở bên trái.</p></div></div>
 <div class="cart-summary"><div class="kv"><span>Tạm tính</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(order.subtotal_amount,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div><div class="kv"><span>Giảm giá</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(order.discount_amount,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div><div class="kv total"><span>Khách cần trả</span><span class="number"><span class="money-value" th:text="${#numbers.formatDecimal(order.total_amount,1,'POINT',0,'COMMA')}">0</span><span class="currency-unit">VNĐ</span></span></div></div>
-<button class="notice future-promotion" type="button" data-future="Khuyến mãi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13 12 21 3 12V3h9l8 8a1.5 1.5 0 0 1 0 2Z"/><circle cx="7.5" cy="7.5" r="1"/></svg><span>Khuyến mãi</span></button>
+<div th:if="${editable and !#lists.isEmpty(items)}" style="margin-top: 10px; border-top: 1px dashed var(--line-strong); padding-top: 10px; display: grid; gap: 8px;">
+  <div class="between small">
+    <span class="muted">Hình thức ưu đãi:
+      <strong th:text="${order.discount_mode == 'COUPON' ? 'Coupon (' + order.coupon_code_snapshot + ')' : (order.discount_mode == 'DIRECT_ORDER' ? 'Giảm toàn đơn' : (order.discount_mode == 'DIRECT_ITEM' ? 'Giảm dòng hàng' : 'KM tự động / Không'))}"></strong>
+    </span>
+    <form th:if="${order.discount_amount > 0}" th:action="@{/sales/{id}/discount/clear(id=${order.id})}" method="post" style="margin:0">
+      <button type="submit" class="btn" style="padding: 2px 8px; font-size: 11px;">Gỡ ưu đãi</button>
+    </form>
+  </div>
+  <form th:action="@{/sales/{id}/discount/coupon(id=${order.id})}" method="post" style="display: grid; gap: 6px;">
+    <div style="display: flex; gap: 6px;">
+      <input name="couponCode" placeholder="Nhập mã coupon..." maxlength="30" style="flex: 1; min-width: 0;" required>
+      <button type="submit" class="btn">Áp dụng</button>
+    </div>
+    <label th:if="${order.discount_amount > 0}" class="small muted" style="display:flex;align-items:center;gap:6px;margin:0">
+      <input type="checkbox" name="confirmed" value="true"> Xác nhận thay thế ưu đãi hiện có
+    </label>
+  </form>
+  <details>
+    <summary class="small" style="cursor: pointer; color: var(--primary); font-weight: 600;">Giảm giá trực tiếp (dòng / toàn đơn)</summary>
+    <form th:action="@{/sales/{id}/discount/direct(id=${order.id})}" method="post" style="display: grid; gap: 6px; margin-top: 8px;">
+      <div style="display: flex; gap: 6px;">
+        <select name="scope" style="flex: 1;">
+          <option value="ORDER">Toàn đơn</option>
+          <option value="ITEM">Dòng hàng</option>
+        </select>
+        <select name="type" style="flex: 1;">
+          <option value="PERCENT">Phần trăm (%)</option>
+          <option value="AMOUNT">Số tiền (VNĐ)</option>
+        </select>
+      </div>
+      <select name="itemId">
+        <option value="">-- Chọn dòng hàng (nếu giảm theo dòng) --</option>
+        <option th:each="it : ${items}" th:value="${it.id}" th:text="${it.product_name_snapshot} + ' (' + ${#numbers.formatDecimal(it.unit_price,1,'POINT',0,'COMMA')} + 'đ)'"></option>
+      </select>
+      <input name="value" type="number" min="0.01" step="0.01" placeholder="Mức giảm (% hoặc VNĐ)" required>
+      <label th:if="${order.discount_amount > 0}" class="small muted" style="display:flex;align-items:center;gap:6px;margin:0">
+        <input type="checkbox" name="confirmed" value="true"> Xác nhận thay thế ưu đãi hiện có
+      </label>
+      <div class="small muted">Nếu vượt hạn mức Thu ngân (10%), nhập tài khoản Quản lý ca duyệt:</div>
+      <div style="display: flex; gap: 6px;">
+        <input name="managerUsername" placeholder="TK Quản lý" style="flex: 1; min-width: 0;">
+        <input name="managerPassword" type="password" placeholder="Mật khẩu QL" style="flex: 1; min-width: 0;">
+      </div>
+      <button type="submit" class="btn primary">Áp dụng giảm giá</button>
+    </form>
+  </details>
+</div>
 <div class="cart-bottom" th:if="${editable}"><a class="btn" th:href="@{/sales/{id}/cancel(id=${order.id})}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>Hủy đơn</a><a class="btn primary" th:if="${!#lists.isEmpty(items)}" th:href="@{/sales/{id}/checkout(id=${order.id})}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h13v4M3 7h18v14H5a2 2 0 0 1-2-2V7Zm18 5h-5v5h5"/><circle cx="17" cy="14.5" r=".5"/></svg>Thanh toán<kbd>F4</kbd></a><button class="btn primary" type="button" th:if="${#lists.isEmpty(items)}" disabled>Thanh toán<kbd>F4</kbd></button></div>
 <a class="btn primary full" th:if="${order.status == 'PAID'}" th:href="@{/sales/{id}/checkout(id=${order.id})}">Xem hóa đơn</a><p th:if="${order.status == 'CANCELLED'}" class="notice warning" th:text="${order.cancellation_reason}"></p>
 </article></div></main></div></div><th:block th:replace="~{layout/pos :: dialogs}"></th:block>

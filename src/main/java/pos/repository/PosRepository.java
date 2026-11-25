@@ -29,6 +29,7 @@ import pos.entity.InvoiceEntity;
 import pos.entity.InventoryMovementEntity;
 import pos.entity.PromotionEntity;
 import pos.entity.PromotionProductEntity;
+import pos.entity.CouponEntity;
 
 @Repository
 @Transactional
@@ -328,6 +329,18 @@ public class PosRepository {
         p.setLifecycleStatus("CANCELED");
         p.setCanceledAt((Timestamp) now);
     }
+    public Optional<Map<String, Object>> couponByCode(String code) {
+        return query("select c from CouponEntity c where upper(c.code)=:code",
+                CouponEntity.class, "code", code == null ? "" : code.strip().toUpperCase())
+                .setMaxResults(1).getResultList().stream().findFirst().map(this::map);
+    }
+    public void orderDiscount(long orderId, String mode, Long couponId, String couponCode, Long approvedBy) {
+        var o = em.find(OrderEntity.class, orderId);
+        o.setDiscountMode(mode);
+        o.setCouponId(couponId);
+        o.setCouponCodeSnapshot(couponCode);
+        o.setApprovedBy(approvedBy);
+    }
     public void quantity(long id, Object quantity, Object total) {
         var i = em.find(OrderItemEntity.class, id); i.setQuantity((BigDecimal) quantity); i.setLineTotal((BigDecimal) total);
     }
@@ -485,7 +498,23 @@ public class PosRepository {
                 "paid_at", value.getPaidAt(),
                 "cancelled_at", value.getCancelledAt(),
                 "cancellation_reason", value.getCancellationReason(),
-                "create_request_key", value.getCreateRequestKey());
+                "create_request_key", value.getCreateRequestKey(),
+                "discount_mode", value.getDiscountMode(),
+                "coupon_id", value.getCouponId(),
+                "coupon_code_snapshot", value.getCouponCodeSnapshot(),
+                "approved_by", value.getApprovedBy());
+    }
+
+    private Map<String, Object> map(CouponEntity value) {
+        return row("id", value.getId(),
+                "code", value.getCode(),
+                "name", value.getName(),
+                "discount_type", value.getDiscountType(),
+                "discount_value", value.getDiscountValue(),
+                "min_order_amount", value.getMinOrderAmount(),
+                "starts_at", value.getStartsAt(),
+                "ends_at", value.getEndsAt(),
+                "lifecycle_status", value.getLifecycleStatus());
     }
 
     private Map<String, Object> map(OrderItemEntity value) {

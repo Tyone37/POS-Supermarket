@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Xóa sản phẩm đã ngừng bán')}"></head>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+
+    <main tabindex="-1" class="page" id="main-content" data-current-page="products">
+      <div class="pagehead">
+        <div>
+          <div class="eyebrow">QUẢN LÝ SẢN PHẨM · XÓA VĨNH VIỄN</div>
+          <h1>Xóa sản phẩm đã ngừng bán</h1>
+          <p>Chỉ hiển thị sản phẩm ở trạng thái Ngừng bán. Hệ thống sẽ chặn xóa nếu sản phẩm đã từng xuất hiện trên hóa đơn.</p>
+        </div>
+        <div class="actions">
+          <a class="btn" th:href="@{/products}">Quay lại danh sách sản phẩm</a>
+        </div>
+      </div>
+
+      <div th:replace="~{layout/pos :: feedback}"></div>
+
+      <form class="filters" th:action="@{/products/delete}" method="get">
+        <div class="search">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+          <input name="q" th:value="${q}" placeholder="Tìm sản phẩm ngừng bán theo tên, mã hoặc mã vạch…" aria-label="Tìm sản phẩm ngừng bán">
+        </div>
+        <button class="btn" type="submit">Tìm kiếm</button>
+      </form>
+
+      <article class="card table-card">
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th>Mã vạch</th>
+                <th>Loại hàng</th>
+                <th class="number">Giá bán</th>
+                <th>Trạng thái</th>
+                <th class="align-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="product : ${products}">
+                <td>
+                  <div class="table-name">
+                    <div class="mini-art">
+                      <img th:src="${product.image_url != null ? product.image_url : '/img/product-placeholder.svg'}" th:alt="${product.name}" loading="lazy" referrerpolicy="no-referrer">
+                    </div>
+                    <div>
+                      <span th:text="${product.name}"></span>
+                      <span class="sub" th:text="${product.code} + ' · ' + ${product.unit_name}"></span>
+                    </div>
+                  </div>
+                </td>
+                <td class="muted" th:text="${product.barcode}"></td>
+                <td th:text="${product.category_name}"></td>
+                <td class="number">
+                  <span class="money-value" th:text="${#numbers.formatDecimal(product.sale_price,1,'POINT',0,'COMMA')}">0</span>
+                  <span class="currency-unit">VNĐ</span>
+                </td>
+                <td>
+                  <span class="badge neutral">
+                    <span class="dot"></span>
+                    <span>Ngừng bán</span>
+                  </span>
+                </td>
+                <td class="align-right">
+                  <a class="btn danger" th:href="@{/products/{id}/delete(id=${product.id})}">Xóa vĩnh viễn</a>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(products)}">
+                <td colspan="6">
+                  <div class="empty">
+                    <h3>Không có sản phẩm ngừng bán nào</h3>
+                    <p>Chỉ những sản phẩm ở trạng thái Ngừng bán mới có thể chọn xóa tại đây.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tablefoot">
+          <span th:text="${#lists.size(products)} + ' sản phẩm ngừng bán'"></span>
+          <span>Sản phẩm đang bán không hiển thị trên màn hình này</span>
+        </div>
+      </article>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{layout/pos :: dialogs}"></th:block>
+</body>
+</html>

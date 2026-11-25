@@ -188,6 +188,26 @@ public class PosRepository {
         }
         return p.getId();
     }
+    public boolean productHasInvoice(long productId) {
+        return query("select count(i) from InvoiceEntity i, OrderItemEntity oi "
+                + "where oi.orderId=i.orderId and oi.productId=:id", Long.class, "id", productId)
+                .getSingleResult() > 0;
+    }
+    public boolean productHasOrderItem(long productId) {
+        return query("select count(oi) from OrderItemEntity oi where oi.productId=:id",
+                Long.class, "id", productId).getSingleResult() > 0;
+    }
+    public void deleteProduct(long productId) {
+        em.createQuery("delete from PromotionProductEntity pp where pp.productId=:id")
+                .setParameter("id", productId).executeUpdate();
+        em.createQuery("update InventoryMovementEntity m set m.productId=null where m.productId=:id")
+                .setParameter("id", productId).executeUpdate();
+        var product = em.find(ProductEntity.class, productId);
+        if (product != null) {
+            em.remove(product);
+            em.flush();
+        }
+    }
 
     public Optional<Map<String, Object>> order(long id, boolean lock) {
         return find(OrderEntity.class, id, lock).map(this::map);

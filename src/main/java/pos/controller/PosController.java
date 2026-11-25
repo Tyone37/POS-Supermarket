@@ -99,6 +99,39 @@ public class PosController {
         }
     }
 
+    @GetMapping("/products/delete")
+    public String deleteProductsPage(@RequestParam(defaultValue = "") String q, Model model) {
+        model.addAttribute("products", catalog.stoppedProducts(q));
+        model.addAttribute("q", q);
+        return "pos/products-delete";
+    }
+
+    @GetMapping("/products/{id}/delete")
+    public String deleteProductConfirm(@PathVariable long id, Model model) {
+        var target = catalog.stoppedProducts("").stream()
+                .filter(row -> ((Number) row.get("id")).longValue() == id)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("Chỉ được xóa sản phẩm đã ngừng bán."));
+        return confirm(model, "Xóa vĩnh viễn sản phẩm " + target.get("name") + "?",
+                "/products/" + id + "/delete", "/products/delete", null);
+    }
+
+    @PostMapping("/products/{id}/delete")
+    public String deleteProduct(Principal actor, @PathVariable long id,
+                                @RequestParam(defaultValue = "false") boolean confirmed,
+                                Model model, jakarta.servlet.http.HttpServletResponse response,
+                                RedirectAttributes flash) {
+        try {
+            catalog.delete(actor.getName(), id, confirmed);
+            flash.addFlashAttribute("message", "Đã xóa vĩnh viễn sản phẩm khỏi danh mục.");
+            return "redirect:/products/delete";
+        } catch (BusinessException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return deleteProductsPage("", model);
+        }
+    }
+
     @GetMapping("/accounts")
     public String accounts(Principal actor, Model model) {
         model.addAttribute("accounts", accounts.list(actor.getName()));

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pos.dto.Forms;
 import pos.dto.ProductEditForm;
+import pos.dto.ProductStatusForm;
 import pos.exception.BusinessException;
 import pos.repository.PosRepository;
 
@@ -82,6 +83,22 @@ public class CatalogService {
         }
         db.updateProduct(id, values.barcode(), values.name(), values.categoryId(), values.unitId(),
                 values.price(), values.stock(), values.imageUrl(), PosSupport.now());
+    }
+
+    @Transactional
+    public void changeStatus(String username, long id, ProductStatusForm form) {
+        PosSupport.actor(db, username, "MANAGER");
+        if (form.getStatus() == null) {
+            throw new BusinessException("Trạng thái bán không hợp lệ.");
+        }
+        var current = product(id, true);
+        String target = form.getStatus().name();
+        // Repeating the same desired state keeps the original stopped_at and updated_at.
+        if (target.equals(current.get("status"))) {
+            return;
+        }
+        checkRevision(form.getExpectedUpdatedAt(), (Timestamp) current.get("updated_at"));
+        db.changeProductStatus(id, target, PosSupport.now());
     }
 
     private Map<String, Object> product(long id, boolean lock) {

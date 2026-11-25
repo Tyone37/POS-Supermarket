@@ -150,3 +150,5 @@ button:disabled { cursor:not-allowed; }
 .pos-app .category-tabs .chip.active{background:var(--primary);border-color:var(--primary);color:white}
 .category-toggle:focus-visible,.pos-app .category-tabs .chip:focus-visible{outline:3px solid #94b9ff;outline-offset:3px}
 @media(max-width:600px){.category-label{font-size:11px}.category-toolbar{gap:8px}.pos-app .category-tabs .chip{min-height:40px;padding:7px 10px}}
+
+.product-status-form { display:inline-flex; margin:0; }

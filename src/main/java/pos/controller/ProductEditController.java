@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pos.dto.ProductEditForm;
+import pos.dto.ProductStatusForm;
 import pos.exception.BusinessException;
 import pos.service.CatalogService;
 
@@ -68,6 +69,20 @@ public class ProductEditController {
         }
         response.setStatus(400);
         return page(catalog.editable(actor.getName(), id), model);
+    }
+
+    @PostMapping("/products/{id}/status")
+    public String changeStatus(Principal actor, @PathVariable long id,
+                               @Valid @ModelAttribute("statusForm") ProductStatusForm form,
+                               BindingResult errors, RedirectAttributes flash) {
+        if (errors.hasErrors()) {
+            throw new BusinessException("Trạng thái bán hoặc phiên bản sản phẩm không hợp lệ. Vui lòng tải lại danh sách.");
+        }
+        catalog.changeStatus(actor.getName(), id, form);
+        flash.addFlashAttribute("message", form.getStatus() == ProductStatusForm.Status.STOPPED
+                ? "Đã ngừng bán sản phẩm. Lịch sử giao dịch được giữ nguyên."
+                : "Đã kích hoạt sản phẩm. Thu ngân có thể tìm và quét mã để bán.");
+        return "redirect:/products";
     }
 
     private String page(Map<String, Object> product, Model model) {

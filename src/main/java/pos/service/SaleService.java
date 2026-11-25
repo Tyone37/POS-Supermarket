@@ -307,7 +307,8 @@ public class SaleService {
     public Map<String, Object> invoice(String username, long id) {
         var actor = PosSupport.actor(db, username, null);
         var invoice = db.invoice(id).orElseThrow(() -> new BusinessException("Hóa đơn không tồn tại."));
-        if (!"MANAGER".equals(actor.get("role_code")) && PosSupport.id(invoice, "issued_by") != PosSupport.id(actor, "id")) {
+        if (!"MANAGER".equals(actor.get("role_code")) && !"ADMIN".equals(actor.get("role_code"))
+                && PosSupport.id(invoice, "issued_by") != PosSupport.id(actor, "id")) {
             throw new AccessDeniedException("Không có quyền xem hóa đơn này.");
         }
         invoice.put("items", db.items(PosSupport.id(invoice, "order_id")));

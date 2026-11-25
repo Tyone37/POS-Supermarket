@@ -1,7 +1,7 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 221 ca hiện có và thêm 45 ca SCRUM-51; tổng cộng 266 ca.
+Giữ nguyên 266 ca hiện có và thêm 67 ca SCRUM-52; tổng cộng 333 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -30,6 +30,8 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-51 | Chặn giao dịch trên ca đã đóng | `service/Scrum51KhoaCaTest.java` | 27 |
 | SCRUM-51 | Giữ nguyên trạng thái và số liệu chốt | `entity/Scrum51BatBienCaTest.java` | 7 |
 | SCRUM-51 | Điều hướng, thanh toán muộn và xem lịch sử | `controller/Scrum51KhoaCaViewTest.java` | 11 |
+| SCRUM-52 | Bộ lọc, phân trang, quyền và dữ liệu đã chốt | `service/Scrum52LichSuCaTest.java` | 48 |
+| SCRUM-52 | Danh sách/chi tiết, lỗi bộ lọc, trạng thái rỗng và quyền HTTP | `controller/Scrum52LichSuCaViewTest.java` | 19 |
 
 `controller/SecurityTestSupport.java` chỉ chứa cấu hình MockMvc và dữ liệu tài khoản dùng chung,
 không có hàm `@Test`. Ba file SCRUM-24/25/26 sử dụng cấu hình này. SCRUM-24 giữ cả test xác thực
@@ -56,6 +58,15 @@ setter entity không sửa tiền đầu ca/giờ kết thúc/trạng thái CLOS
 MockMvc dùng Security thật và xác minh HTTP 400, redirect mở ca và GET hóa đơn cũ.
 Test mock không chứng minh khóa/rollback thực tế khi nhiều kết nối MySQL chạy đồng thời.
 
+SCRUM-52 kiểm tra MANAGER/ADMIN, từ chối CASHIER/tài khoản khóa/không tồn tại trước khi đọc lịch sử;
+lọc ngày theo giờ Việt Nam, ngày nhuận/cuối năm, khoảng một ngày, khoảng mở một đầu;
+ID/trạng thái/trang không hợp lệ, phân trang 0/1/20/21 bản ghi, giữ dữ liệu chốt dù tổng hóa đơn khác;
+ca OPEN/CLOSED, danh sách rỗng, hiển thị chênh lệch âm và liên kết hóa đơn.
+MockMvc dùng SecurityConfig và Thymeleaf thật. Test mock không chứng minh trực tiếp điều kiện JPQL trên MySQL.
+Đã chạy smoke test đọc dữ liệu MySQL local: MANAGER/ADMIN danh sách, bộ lọc kết hợp,
+chi tiết 3 ca và liên kết 9 hóa đơn trả 200; CASHIER danh sách trả 403.
+Không tạo/sửa/đóng ca hay hóa đơn trong lượt smoke test này.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -70,6 +81,7 @@ mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
 mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
 mvn.cmd -B "-Dtest=Scrum50KetThucCaTest,Scrum50KetThucCaViewTest,Scrum50LuuKetQuaCaTest" test
 mvn.cmd -B "-Dtest=Scrum51*" test
+mvn.cmd -B "-Dtest=Scrum52*" test
 ```
 
 Kết quả trong `target/surefire-reports`, tách theo tên file/story.

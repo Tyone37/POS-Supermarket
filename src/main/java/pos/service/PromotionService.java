@@ -51,7 +51,7 @@ public class PromotionService {
         if (db.promotions().stream().anyMatch(p -> code.equalsIgnoreCase(String.valueOf(p.get("code"))))) {
             throw new BusinessException("Mã khuyến mãi đã tồn tại.");
         }
-        ValidatedPromotion valid = validateAndParse(form, now, null);
+        ValidatedPromotion valid = validateAndParse(form, now, null, false);
         return db.createPromotion(code, valid.name(), valid.discountPercent(),
                 valid.startsAt(), valid.endsAt(), valid.productIds());
     }
@@ -69,7 +69,7 @@ public class PromotionService {
         if (!"UPCOMING".equals(status)) {
             throw new BusinessException("Chương trình đã kết thúc hoặc đã hủy, chỉ được xem và không thể chỉnh sửa.");
         }
-        ValidatedPromotion valid = validateAndParse(form, now, id);
+        ValidatedPromotion valid = validateAndParse(form, now, id, true);
         db.updatePromotion(id, valid.name(), valid.discountPercent(),
                 valid.startsAt(), valid.endsAt(), valid.productIds());
     }
@@ -99,7 +99,7 @@ public class PromotionService {
         if (now.before(startsAt)) {
             return "UPCOMING";
         }
-        if (now.after(endsAt)) {
+        if (!now.before(endsAt)) {
             return "ENDED";
         }
         return "ACTIVE";
@@ -116,7 +116,8 @@ public class PromotionService {
         return row;
     }
 
-    private ValidatedPromotion validateAndParse(Forms.Promotion form, Timestamp now, Long excludePromotionId) {
+    private ValidatedPromotion validateAndParse(Forms.Promotion form, Timestamp now, Long excludePromotionId,
+                                                boolean requireFutureStart) {
         String name = PosSupport.text(form.name(), "Tên chương trình", 200);
         BigDecimal discountPercent = parseDiscountPercent(form.discountPercent());
         Timestamp startsAt = parseDateTime(form.startsAt(), "Thời gian bắt đầu");
@@ -125,7 +126,7 @@ public class PromotionService {
         if (!startsAt.before(endsAt)) {
             throw new BusinessException("Thời gian kết thúc phải sau thời gian bắt đầu.");
         }
-        if (startsAt.before(now)) {
+        if (requireFutureStart && startsAt.before(now)) {
             throw new BusinessException("Thời gian bắt đầu phải từ hiện tại trở đi.");
         }
 

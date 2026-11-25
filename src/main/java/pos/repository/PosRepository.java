@@ -243,7 +243,7 @@ public class PosRepository {
     public Optional<Map<String, Object>> activePromotionForProduct(long productId, Object now) {
         return query("select p from PromotionEntity p, PromotionProductEntity pp "
                 + "where p.id = pp.promotionId and pp.productId = :productId "
-                + "and p.lifecycleStatus = 'ENABLED' and p.startsAt <= :now and p.endsAt >= :now "
+                + "and p.lifecycleStatus = 'ENABLED' and p.startsAt <= :now and p.endsAt > :now "
                 + "order by p.discountPercent desc, p.id desc",
                 PromotionEntity.class, "productId", productId, "now", now)
                 .setMaxResults(1).getResultList().stream().findFirst().map(this::map);

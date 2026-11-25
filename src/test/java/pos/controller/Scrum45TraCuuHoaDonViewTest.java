@@ -163,6 +163,7 @@ class Scrum45TraCuuHoaDonViewTest {
     void lienKetMoDungHoaDonVaTrangThai(String invoiceStatus) throws Exception {
         var invoice = new HashMap<String, Object>(Map.of("invoice_no", "HD-81", "issued_at", time(),
                 "cashier_name", "Thu ngân", "method", "CASH", "status", invoiceStatus, "items", List.of()));
+        invoice.put("id", 81L);
         for (String field : List.of("subtotal_amount", "discount_amount", "total_amount", "amount_received", "change_amount")) {
             invoice.put(field, BigDecimal.ZERO);
         }

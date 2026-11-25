@@ -1,7 +1,8 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 333 ca hiện có và thêm 60 ca SCRUM-45; tổng cộng 393 ca.
+Giữ nguyên 393 ca Java hiện có và thêm 35 ca SCRUM-46; tổng cộng 428 ca Java.
+SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 434 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -11,6 +12,8 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-45 | Tìm/lọc hóa đơn, phạm vi tài khoản và phân trang | `service/Scrum45TraCuuHoaDonTest.java` | 36 |
 | SCRUM-45 | Render bộ lọc/kết quả, quyền HTTP và liên kết chi tiết | `controller/Scrum45TraCuuHoaDonViewTest.java` | 17 |
 | SCRUM-45 | Điều kiện JPQL, bind/escape mã và snapshot DTO | `repository/Scrum45TruyVanHoaDonTest.java` | 7 |
+| SCRUM-46 | Snapshot, phạm vi tài khoản, in lặp chỉ đọc | `service/Scrum46InHoaDonTest.java` | 18 |
+| SCRUM-46 | Xem trước 80 mm, link in lại, thanh toán và quyền | `controller/Scrum46InHoaDonViewTest.java` | 17 |
 | SCRUM-24 | US-DN-01 Đăng nhập | `controller/Scrum24DangNhapTest.java` | 10 |
 | SCRUM-25 | US-DN-02 Đăng xuất | `controller/Scrum25DangXuatTest.java` | 3 |
 | SCRUM-26 | US-DN-03 Phân quyền | `controller/Scrum26PhanQuyenTest.java` | 11 |
@@ -81,10 +84,24 @@ Smoke test trên MySQL local: MANAGER/ADMIN thấy 9 hóa đơn (8 CASH, 1 BANK_
 mã không tồn tại/ký tự wildcard trả danh sách rỗng 200. VOID chưa có dữ liệu thực tế trong DB local,
 hiển thị chi tiết VOID được kiểm tra bằng MockMvc. Smoke chỉ tra cứu, không sửa hóa đơn.
 
+SCRUM-46 lấy giá/tên/đơn vị/giảm giá từ snapshot; kiểm tra tiền thập phân và số lượng lẻ,
+MANAGER/ADMIN/thu ngân đúng người lập, tài khoản khóa/khác vai trò/không tồn tại, mã ca không cần mở lại,
+ID sai/hóa đơn chưa lưu; gọi xem trước lặp giữ nguyên dữ liệu và không gọi thao tác ghi.
+MockMvc kiểm tra giấy cuộn 80 mm, nội dung in, đánh dấu VOID, escape tên hàng, từ chối khổ giấy khác,
+link in từ chi tiết, redirect sau thanh toán và từ chối POST vào endpoint xem trước.
+Test JavaScript ở `src/test/js/invoice-print.test.cjs` chạy mã đã biên dịch:
+chờ font, chặn bấm lặp, đóng/hủy hộp thoại cho phép in lại, lỗi print API/font và thiếu nút.
+Không gọi API ghi dữ liệu từ script. Mô phỏng đóng hộp thoại không chứng minh máy in vật lý đã in thành công.
+Smoke MySQL local: MANAGER/ADMIN/CASHIER mở được bản giấy cuộn 80 mm với hóa đơn trong phạm vi;
+thu ngân mở bản xem trước hóa đơn khác người lập nhận 403. Chỉ đọc dữ liệu hóa đơn có sẵn.
+Bản in PDF thử bằng Chrome headless gồm một dòng thực tế và fixture 60 dòng/tên dài;
+khổ giấy cuộn mô phỏng driver 80 × 297 mm. Cần nghiệm thu driver/máy in thật.
+
 Chạy toàn bộ:
 
 ```powershell
 mvn.cmd -B test
+npm.cmd run test:print
 ```
 
 Chạy riêng một story:
@@ -92,6 +109,7 @@ Chạy riêng một story:
 ```powershell
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
 mvn.cmd -B "-Dtest=Scrum45*" test
+mvn.cmd -B "-Dtest=Scrum46*" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
 mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
 mvn.cmd -B "-Dtest=Scrum50KetThucCaTest,Scrum50KetThucCaViewTest,Scrum50LuuKetQuaCaTest" test

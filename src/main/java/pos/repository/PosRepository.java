@@ -253,6 +253,10 @@ public class PosRepository {
                     var result = map((OrderItemEntity) values[0]); result.put("quantity_scale", values[1]); return result;
                 }).toList();
     }
+    public List<Map<String, Object>> invoiceItems(long order) {
+        return query("select i from OrderItemEntity i where i.orderId=:id order by i.productId",
+                OrderItemEntity.class, "id", order).getResultList().stream().map(this::map).toList();
+    }
     public void createItem(long order, Map<String, Object> product) {
         var i = new OrderItemEntity();
         i.setOrderId(order); i.setProductId(((Number) product.get("id")).longValue());

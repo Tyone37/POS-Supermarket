@@ -12,10 +12,10 @@
       <h1>Chi tiết hóa đơn</h1>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button type="button" class="btn" onclick="window.print()">
+      <a class="btn" th:href="@{/invoices/{id}/print(id=${invoice.id})}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-        In hóa đơn
-      </button>
+        Xem trước &amp; In lại
+      </a>
       <a class="btn" th:href="@{/invoices}">Tra cứu hóa đơn</a>
       <a th:if="${canCashier}" class="btn primary" th:href="@{/sales}">Bán đơn mới</a>
     </div>

@@ -1,8 +1,8 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 393 ca Java hiện có và thêm 35 ca SCRUM-46; tổng cộng 428 ca Java.
-SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 434 ca.
+Giữ nguyên 428 ca Java hiện có và thêm 60 ca SCRUM-29; tổng cộng 488 ca Java.
+SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 494 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -19,6 +19,9 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-26 | US-DN-03 Phân quyền | `controller/Scrum26PhanQuyenTest.java` | 11 |
 | SCRUM-27 | US-DN-04 Tạo và khóa tài khoản | `service/Scrum27TaoVaKhoaTaiKhoanTest.java` | 14 |
 | SCRUM-28 | US-SP-01 Thêm sản phẩm | `service/Scrum28ThemSanPhamTest.java` | 17 |
+| SCRUM-29 | Sửa sản phẩm, validation, mã trùng, quyền, snapshot và phiên bản form | `service/Scrum29SuaSanPhamTest.java` | 42 |
+| SCRUM-29 | Form sửa, lỗi dữ liệu, CSRF và quyền HTTP | `controller/Scrum29SuaSanPhamViewTest.java` | 15 |
+| SCRUM-29 | Ghi thuộc tính, giữ trạng thái và biến động kho | `repository/Scrum29LuuSanPhamTest.java` | 3 |
 | SCRUM-35 | U1.1 Quét/thêm sản phẩm vào đơn | `service/Scrum35ThemSanPhamVaoDonTest.java` | 1 |
 | SCRUM-36 | U1.2 Tìm kiếm sản phẩm | `service/Scrum36TimSanPhamTest.java` | 4 |
 | SCRUM-37 | U1.3 Điều chỉnh số lượng/xóa dòng | `service/Scrum37DieuChinhSoLuongTest.java` | 7 |
@@ -97,6 +100,17 @@ thu ngân mở bản xem trước hóa đơn khác người lập nhận 403. Ch
 Bản in PDF thử bằng Chrome headless gồm một dòng thực tế và fixture 60 dòng/tên dài;
 khổ giấy cuộn mô phỏng driver 80 × 297 mm. Cần nghiệm thu driver/máy in thật.
 
+SCRUM-29 dùng chung validation với thêm sản phẩm, giữ 17 test SCRUM-28 chạy đạt.
+Bao phủ dữ liệu hợp lệ, thiếu/sai/vượt giới hạn, giá không dương, số lượng theo độ chính xác đơn vị,
+tồn thấp hơn lượng giữ, mã vạch trùng barcode/SKU khác (kể cả sản phẩm ngừng bán), loại trừ chính bản ghi;
+URL ảnh, đổi đơn vị có/chưa có lịch sử, form cũ, quyền và CSRF, lưu chênh lệch kho tăng/giảm/không đổi.
+Test mock không chứng minh transaction và constraint MySQL thực tế.
+Đã kiểm tra bổ sung bằng MySQL local trong transaction rollback: cập nhật tên/giá/tồn sản phẩm,
+tạo đơn/dòng bán mới qua service lấy giá mới; hóa đơn và DTO in cũ giữ nguyên;
+sau rollback so sánh sản phẩm và số lượng đơn/ca/hóa đơn/movement trở về dữ liệu ban đầu.
+HTTP thật: MANAGER mở form 200, gửi giá 0 trả 400 và giữ sản phẩm; CASHIER/ADMIN mở form trả 403.
+Helper kiểm tra DB là công cụ tạm trong target, không nằm trong bộ unit test mặc định.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -108,6 +122,7 @@ Chạy riêng một story:
 
 ```powershell
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
+mvn.cmd -B "-Dtest=Scrum29*" test
 mvn.cmd -B "-Dtest=Scrum45*" test
 mvn.cmd -B "-Dtest=Scrum46*" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test

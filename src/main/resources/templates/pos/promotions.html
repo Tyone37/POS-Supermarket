@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Quản lý khuyến mãi')}"></head>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+
+    <main tabindex="-1" class="page" id="main-content" data-current-page="promotions">
+      <div class="pagehead">
+        <div>
+          <div class="eyebrow">CHƯƠNG TRÌNH GIẢM GIÁ</div>
+          <h1>Quản lý khuyến mãi</h1>
+          <p>Tạo, chỉnh sửa chương trình chưa bắt đầu hoặc kết thúc sớm chương trình đang áp dụng.</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="button" data-open-dialog="create-promotion">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Tạo khuyến mãi
+          </button>
+        </div>
+      </div>
+
+      <div th:replace="~{layout/pos :: feedback}"></div>
+
+      <article class="card table-card">
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Tên chương trình</th>
+                <th class="number">Mức giảm</th>
+                <th>Thời gian áp dụng</th>
+                <th class="number">Số SP</th>
+                <th>Trạng thái</th>
+                <th class="align-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="promo : ${promotions}">
+                <td><strong th:text="${promo.code}">KM01</strong></td>
+                <td th:text="${promo.name}">Tên chương trình</td>
+                <td class="number" th:text="${promo.discount_percent.stripTrailingZeros().toPlainString()} + '%'">10%</td>
+                <td>
+                  <div class="small" th:text="'Từ: ' + ${@posTime.format(promo.starts_at)}"></div>
+                  <div class="small muted" th:text="'Đến: ' + ${@posTime.format(promo.ends_at)}"></div>
+                </td>
+                <td class="number" th:text="${promo.product_count}">0</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${promo.effective_status == 'ACTIVE' ? 'success' : (promo.effective_status == 'UPCOMING' ? 'warning' : (promo.effective_status == 'CANCELED' ? 'danger' : 'neutral'))}">
+                    <span class="dot"></span>
+                    <span th:text="${promo.effective_status == 'ACTIVE' ? 'Đang áp dụng' : (promo.effective_status == 'UPCOMING' ? 'Chưa bắt đầu' : (promo.effective_status == 'CANCELED' ? 'Đã hủy' : 'Đã kết thúc'))}"></span>
+                  </span>
+                </td>
+                <td class="align-right">
+                  <div class="product-actions">
+                    <a class="btn" th:href="@{/promotions/{id}(id=${promo.id})}"
+                       th:text="${promo.effective_status == 'UPCOMING' ? 'Sửa' : 'Xem'}">Xem</a>
+                    <a th:if="${promo.effective_status == 'ACTIVE' or promo.effective_status == 'UPCOMING'}"
+                       class="btn danger"
+                       th:href="@{/promotions/{id}/cancel(id=${promo.id})}">Kết thúc sớm</a>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(promotions)}">
+                <td colspan="7">
+                  <div class="empty">
+                    <h3>Chưa có chương trình khuyến mãi</h3>
+                    <p>Nhấn "Tạo khuyến mãi" để thiết lập chương trình mới.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <dialog id="create-promotion" th:attr="data-open=${form != null}">
+        <div class="modalhead">
+          <h2>Tạo chương trình khuyến mãi</h2>
+          <button class="iconbtn" type="button" data-close-dialog aria-label="Đóng">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
+          </button>
+        </div>
+        <div class="modalbody">
+          <div th:if="${error}" class="notice danger" role="alert" th:text="${error}"></div>
+          <form th:action="@{/promotions}" method="post" class="formgrid">
+            <div class="field">
+              <label for="promoCode">Mã khuyến mãi (để trống để tự sinh)</label>
+              <input id="promoCode" name="code" maxlength="20" th:value="${form?.code}" placeholder="VD: KM20">
+            </div>
+            <div class="field">
+              <label for="discountPercent">Giảm giá (%) *</label>
+              <input id="discountPercent" name="discountPercent" type="number" min="0.01" max="100" step="0.01" th:value="${form?.discountPercent}" placeholder="20" required>
+            </div>
+            <div class="field span2">
+              <label for="promoName">Tên chương trình *</label>
+              <input id="promoName" name="name" maxlength="200" th:value="${form?.name}" placeholder="Ví dụ: Giảm giá cuối tuần" required>
+            </div>
+            <div class="field">
+              <label for="startsAt">Thời gian bắt đầu *</label>
+              <input id="startsAt" name="startsAt" type="datetime-local" th:value="${form?.startsAt}" required>
+            </div>
+            <div class="field">
+              <label for="endsAt">Thời gian kết thúc *</label>
+              <input id="endsAt" name="endsAt" type="datetime-local" th:value="${form?.endsAt}" required>
+            </div>
+            <div class="field span2">
+              <label>Sản phẩm áp dụng *</label>
+              <div style="max-height: 200px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 6px;">
+                <label th:each="product : ${products}" style="display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 0;">
+                  <input type="checkbox" name="productIds" th:value="${product.id}"
+                         th:checked="${form?.productIds != null and form.productIds.contains(product.id)}">
+                  <span th:text="${product.code} + ' — ' + ${product.name}"></span>
+                </label>
+              </div>
+            </div>
+            <div class="span2 actions" style="display: flex; gap: 10px; margin-top: 10px;">
+              <button type="submit" class="btn primary" style="flex: 1;">Lưu khuyến mãi</button>
+              <a class="btn" th:href="@{/promotions}">Hủy</a>
+            </div>
+          </form>
+        </div>
+      </dialog>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{layout/pos :: dialogs}"></th:block>
+</body>
+</html>

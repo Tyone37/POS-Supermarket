@@ -1,5 +1,7 @@
 package pos.dto;
 
+import java.util.List;
+
 public final class Forms {
     private Forms() { }
 
@@ -9,4 +11,6 @@ public final class Forms {
         @Override public String toString() { return "NewAccount[username=" + username + "]"; }
     }
     public record Payment(String method, String received, String reference, String requestKey, Boolean verified) { }
+    public record Promotion(String code, String name, String discountPercent,
+                            String startsAt, String endsAt, List<Long> productIds) { }
 }

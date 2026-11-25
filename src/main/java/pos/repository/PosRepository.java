@@ -28,6 +28,7 @@ import pos.entity.PaymentEntity;
 import pos.entity.InvoiceEntity;
 import pos.entity.InventoryMovementEntity;
 import pos.entity.PromotionEntity;
+import pos.entity.PromotionProductEntity;
 
 @Repository
 @Transactional
@@ -248,7 +249,64 @@ public class PosRepository {
                 .setMaxResults(1).getResultList().stream().findFirst().map(this::map);
     }
     public Optional<Map<String, Object>> promotion(long id) {
-        return find(PromotionEntity.class, id, false).map(this::map);
+        return promotion(id, false);
+    }
+    public Optional<Map<String, Object>> promotion(long id, boolean lock) {
+        return find(PromotionEntity.class, id, lock).map(this::map);
+    }
+    public List<Map<String, Object>> promotions() {
+        return query("select p from PromotionEntity p order by p.id desc", PromotionEntity.class)
+                .getResultList().stream().map(this::map).toList();
+    }
+    public List<Long> promotionProductIds(long promotionId) {
+        return query("select pp.productId from PromotionProductEntity pp where pp.promotionId=:id order by pp.productId",
+                Long.class, "id", promotionId).getResultList();
+    }
+    public List<Map<String, Object>> overlappingPromotions(long productId, Timestamp startsAt, Timestamp endsAt,
+                                                           Long excludePromotionId) {
+        return query("select p from PromotionEntity p, PromotionProductEntity pp "
+                + "where p.id = pp.promotionId and pp.productId = :productId "
+                + "and p.lifecycleStatus = 'ENABLED' "
+                + "and p.startsAt < :endsAt and p.endsAt > :startsAt "
+                + "and (:excludeId is null or p.id <> :excludeId)",
+                PromotionEntity.class,
+                "productId", productId, "startsAt", startsAt, "endsAt", endsAt, "excludeId", excludePromotionId)
+                .getResultList().stream().map(this::map).toList();
+    }
+    public long createPromotion(String code, String name, BigDecimal discountPercent, Timestamp startsAt,
+                                Timestamp endsAt, List<Long> productIds) {
+        var p = new PromotionEntity();
+        p.setCode(code);
+        p.setName(name);
+        p.setDiscountPercent(discountPercent);
+        p.setStartsAt(startsAt);
+        p.setEndsAt(endsAt);
+        p.setLifecycleStatus("ENABLED");
+        em.persist(p);
+        em.flush();
+        for (Long productId : productIds) {
+            em.persist(new PromotionProductEntity(p.getId(), productId));
+        }
+        return p.getId();
+    }
+    public void updatePromotion(long id, String name, BigDecimal discountPercent, Timestamp startsAt,
+                                Timestamp endsAt, List<Long> productIds) {
+        var p = em.find(PromotionEntity.class, id);
+        p.setName(name);
+        p.setDiscountPercent(discountPercent);
+        p.setStartsAt(startsAt);
+        p.setEndsAt(endsAt);
+        em.createQuery("delete from PromotionProductEntity pp where pp.promotionId=:id")
+                .setParameter("id", id).executeUpdate();
+        em.flush();
+        for (Long productId : productIds) {
+            em.persist(new PromotionProductEntity(id, productId));
+        }
+    }
+    public void cancelPromotion(long id, Object now) {
+        var p = em.find(PromotionEntity.class, id);
+        p.setLifecycleStatus("CANCELED");
+        p.setCanceledAt((Timestamp) now);
     }
     public void quantity(long id, Object quantity, Object total) {
         var i = em.find(OrderItemEntity.class, id); i.setQuantity((BigDecimal) quantity); i.setLineTotal((BigDecimal) total);

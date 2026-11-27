@@ -50,7 +50,9 @@ public class PosController {
 
     @GetMapping("/shifts")
     public String shifts(Principal actor, Model model) {
-        model.addAttribute("shift", shifts.current(actor.getName()).orElse(null));
+        var summary = shifts.summary(actor.getName());
+        model.addAttribute("shift", summary.shift());
+        model.addAttribute("summary", summary);
         model.addAttribute("registers", shifts.registers());
         return "pos/shifts";
     }

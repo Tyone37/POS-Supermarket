@@ -99,6 +99,7 @@ public class ShiftEntity {
     }
 
     public void setStatus(String status) {
+        requireMutable();
         this.status = status;
     }
 
@@ -123,6 +124,7 @@ public class ShiftEntity {
     }
 
     public void setClosedAt(Timestamp closedAt) {
+        requireMutable();
         this.closedAt = closedAt;
     }
 
@@ -131,6 +133,7 @@ public class ShiftEntity {
     }
 
     public void setOpeningCash(BigDecimal openingCash) {
+        requireMutable();
         this.openingCash = openingCash;
     }
 
@@ -160,6 +163,9 @@ public class ShiftEntity {
 
     public void close(Timestamp time, BigDecimal revenue, BigDecimal cashSales, BigDecimal cashRefunds,
                       BigDecimal expectedCash, BigDecimal actualCash, BigDecimal difference) {
+        if (!"OPEN".equals(status)) {
+            throw new IllegalStateException("Chỉ được kết thúc ca đang mở.");
+        }
         this.closedAt = time;
         this.closingRevenue = revenue;
         this.closingCashSales = cashSales;
@@ -168,6 +174,12 @@ public class ShiftEntity {
         this.closingActualCash = actualCash;
         this.closingDifference = difference;
         this.status = "CLOSED";
+    }
+
+    private void requireMutable() {
+        if ("CLOSED".equals(status)) {
+            throw new IllegalStateException("Ca đã kết thúc, không được thay đổi số liệu bàn giao.");
+        }
     }
 
 }

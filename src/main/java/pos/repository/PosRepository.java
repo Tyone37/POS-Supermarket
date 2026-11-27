@@ -228,6 +228,39 @@ public class PosRepository {
         return p.getId();
     }
 
+    public boolean hasProductHistory(long id) {
+        return !query("select i.id from OrderItemEntity i where i.productId=:id", Long.class, "id", id)
+                .setMaxResults(1).getResultList().isEmpty()
+                || !query("select m.id from InventoryMovementEntity m where m.productId=:id", Long.class, "id", id)
+                .setMaxResults(1).getResultList().isEmpty();
+    }
+
+    public void updateProduct(long id, String barcode, String name, long category, long unit,
+                              BigDecimal price, BigDecimal stock, String image, Timestamp now) {
+        var product = em.find(ProductEntity.class, id);
+        BigDecimal delta = stock.subtract(product.getStockQuantity());
+        product.setBarcode(barcode);
+        product.setName(name);
+        product.setCategoryId(category);
+        product.setUnitId(unit);
+        product.setSalePrice(price);
+        product.setStockQuantity(stock);
+        product.setImageUrl(image);
+        product.setUpdatedAt(now);
+        if (delta.signum() != 0) {
+            var movement = new InventoryMovementEntity();
+            movement.setEventKey("PRODUCT-EDIT-" + java.util.UUID.randomUUID());
+            movement.setProductId(id);
+            movement.setProductCodeSnapshot(product.getCode());
+            movement.setMovementType("ADJUSTMENT");
+            movement.setQuantityDelta(delta);
+            movement.setReason("Cập nhật tồn kho từ danh mục sản phẩm");
+            movement.setCreatedAt(now);
+            em.persist(movement);
+        }
+        em.flush();
+    }
+
     public Optional<Map<String, Object>> order(long id, boolean lock) {
         return find(OrderEntity.class, id, lock).map(this::map);
     }
@@ -252,6 +285,10 @@ public class PosRepository {
                 Object[].class, "id", order).getResultList().stream().map(values -> {
                     var result = map((OrderItemEntity) values[0]); result.put("quantity_scale", values[1]); return result;
                 }).toList();
+    }
+    public List<Map<String, Object>> invoiceItems(long order) {
+        return query("select i from OrderItemEntity i where i.orderId=:id order by i.productId",
+                OrderItemEntity.class, "id", order).getResultList().stream().map(this::map).toList();
     }
     public void createItem(long order, Map<String, Object> product) {
         var i = new OrderItemEntity();

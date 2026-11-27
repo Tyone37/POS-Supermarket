@@ -1,0 +1,3 @@
+/* Paper length comes from the 80 mm printer driver; printable width excludes 2 mm margins. */
+@page { size: auto; margin: 2mm; }
+body { --paper-width: 76mm; --invoice-font-size: 12px; --table-font-size: 10px; }

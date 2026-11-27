@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Lịch sử ca')}"></head>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+    <main class="page" id="main-content" tabindex="-1" data-current-page="shift-history">
+      <div class="pagehead"><div><h1>Lịch sử ca</h1><p>Tìm ca làm việc và xem kết quả bàn giao.</p></div></div>
+      <div th:replace="~{layout/pos :: feedback}"></div>
+      <section class="card" aria-label="Bộ lọc ca">
+        <form method="get" th:action="@{/shifts/history}" th:object="${filter}" class="formgrid">
+          <div class="field"><label for="fromDate">Ngày mở ca từ</label><input type="date" th:field="*{fromDate}"><p class="field-error" th:errors="*{fromDate}"></p></div>
+          <div class="field"><label for="toDate">Đến hết ngày</label><input type="date" th:field="*{toDate}"><p class="field-error" th:errors="*{toDate}"></p></div>
+          <div class="field"><label for="cashierId">Thu ngân</label><select th:field="*{cashierId}"><option value="">Tất cả thu ngân</option><option th:each="c : ${options.cashiers}" th:value="${c.id}" th:text="${c.label}"></option></select><p class="field-error" th:errors="*{cashierId}"></p></div>
+          <div class="field"><label for="registerId">Quầy</label><select th:field="*{registerId}"><option value="">Tất cả quầy</option><option th:each="r : ${options.registers}" th:value="${r.id}" th:text="${r.label}"></option></select><p class="field-error" th:errors="*{registerId}"></p></div>
+          <div class="field"><label for="status">Trạng thái</label><select th:field="*{status}"><option value="">Tất cả trạng thái</option><option value="OPEN">Đang mở</option><option value="CLOSED">Đã kết thúc</option></select><p class="field-error" th:errors="*{status}"></p></div>
+          <div class="actions"><button class="btn primary" type="submit">Tìm kiếm</button><a class="btn" th:href="@{/shifts/history}">Xóa bộ lọc</a></div>
+          <p class="muted span2">Khoảng ngày áp dụng cho giờ mở ca theo giờ Việt Nam.</p>
+        </form>
+      </section>
+      <section class="card" th:unless="${invalidFilter == true}" aria-label="Kết quả tìm kiếm">
+        <div class="empty" th:if="${shifts.items.isEmpty()}"><h2>Không có ca phù hợp</h2><p>Thử thay đổi khoảng ngày, thu ngân, quầy hoặc trạng thái.</p></div>
+        <div class="tablewrap" th:unless="${shifts.items.isEmpty()}">
+          <table><thead><tr><th>Mã ca</th><th>Trạng thái</th><th>Thu ngân</th><th>Quầy</th><th>Giờ mở</th><th>Giờ kết thúc</th><th></th></tr></thead>
+            <tbody><tr th:each="s : ${shifts.items}">
+              <td th:text="${s.shiftNo}"></td><td th:text="${s.status == 'OPEN' ? 'Đang mở' : 'Đã kết thúc'}"></td>
+              <td><span th:text="${s.cashierName}"></span><small class="muted" th:text="${s.employeeCode}"></small></td><td th:text="${s.registerName}"></td>
+              <td th:text="${@posTime.format(s.openedAt)}"></td><td th:text="${@posTime.format(s.closedAt)}"></td>
+              <td><a class="btn" th:href="@{/shifts/history/{id}(id=${s.id})}" th:attr="aria-label='Xem ca ' + ${s.shiftNo}">Chi tiết</a></td>
+            </tr></tbody>
+          </table>
+        </div>
+        <nav class="actions" aria-label="Phân trang ca">
+          <a class="btn" th:if="${shifts.number > 0}" th:href="@{/shifts/history(page=${shifts.number - 1},fromDate=${filter.fromDate},toDate=${filter.toDate},cashierId=${filter.cashierId},registerId=${filter.registerId},status=${filter.status})}">Trang trước</a>
+          <span th:text="'Trang ' + ${shifts.number + 1}"></span>
+          <a class="btn" th:if="${shifts.hasNext}" th:href="@{/shifts/history(page=${shifts.number + 1},fromDate=${filter.fromDate},toDate=${filter.toDate},cashierId=${filter.cashierId},registerId=${filter.registerId},status=${filter.status})}">Trang sau</a>
+        </nav>
+      </section>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{layout/pos :: dialogs}"></th:block>
+</body></html>

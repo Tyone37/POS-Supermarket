@@ -8,16 +8,15 @@
 <main tabindex="-1" id="main-content" data-current-page="invoices" class="page narrow">
   <div class="pagehead no-print">
     <div>
-      <p class="eyebrow" th:text="${invoice.status == 'VOID' ? 'HÓA ĐƠN BÁN HÀNG · ĐÃ HỦY' : 'HÓA ĐƠN BÁN HÀNG · ĐÃ PHÁT HÀNH'}"></p>
+      <p class="eyebrow">HÓA ĐƠN BÁN HÀNG · HOÀN TẤT</p>
       <h1>Chi tiết hóa đơn</h1>
     </div>
     <div style="display: flex; gap: 8px;">
-      <a class="btn" th:href="@{/invoices/{id}/print(id=${invoice.id})}">
+      <button type="button" class="btn" onclick="window.print()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-        Xem trước &amp; In lại
-      </a>
-      <a class="btn" th:href="@{/invoices}">Tra cứu hóa đơn</a>
-      <a th:if="${canCashier}" class="btn primary" th:href="@{/sales}">Bán đơn mới</a>
+        In hóa đơn
+      </button>
+      <a class="btn primary" th:href="@{/sales}">Bán đơn mới</a>
     </div>
   </div>
 
@@ -26,8 +25,7 @@
       <h2>POS Supermarket</h2>
       <p class="muted" style="font-size: 11px;">HỆ THỐNG BÁN HÀNG TẠI QUẦY SIÊU THỊ</p>
       <h3 style="font-size: 15px; margin: 12px 0 2px;" th:text="${invoice.invoice_no}">HÓA ĐƠN</h3>
-      <span class="badge" th:classappend="${invoice.status == 'VOID' ? 'danger' : 'success'}"
-            style="margin-top: 6px;" th:text="${invoice.status == 'VOID' ? 'Đã hủy' : 'Đã thanh toán'}"></span>
+      <span class="badge success" style="margin-top: 6px;">Đã thanh toán</span>
     </div>
 
     <dl class="spaced" style="font-size: 11px; margin-bottom: 16px;">

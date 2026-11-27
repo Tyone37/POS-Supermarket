@@ -41,24 +41,6 @@ public class ShiftEntity {
     @Column(name = "opening_cash", nullable = false, precision = 18, scale = 2)
     private BigDecimal openingCash;
 
-    @Column(name = "closing_revenue", precision = 18, scale = 2)
-    private BigDecimal closingRevenue;
-
-    @Column(name = "closing_cash_sales", precision = 18, scale = 2)
-    private BigDecimal closingCashSales;
-
-    @Column(name = "closing_cash_refunds", precision = 18, scale = 2)
-    private BigDecimal closingCashRefunds;
-
-    @Column(name = "closing_expected_cash", precision = 18, scale = 2)
-    private BigDecimal closingExpectedCash;
-
-    @Column(name = "closing_actual_cash", precision = 18, scale = 2)
-    private BigDecimal closingActualCash;
-
-    @Column(name = "closing_difference", precision = 18, scale = 2)
-    private BigDecimal closingDifference;
-
     public ShiftEntity() {
     }
 
@@ -99,7 +81,6 @@ public class ShiftEntity {
     }
 
     public void setStatus(String status) {
-        requireMutable();
         this.status = status;
     }
 
@@ -124,7 +105,6 @@ public class ShiftEntity {
     }
 
     public void setClosedAt(Timestamp closedAt) {
-        requireMutable();
         this.closedAt = closedAt;
     }
 
@@ -133,53 +113,7 @@ public class ShiftEntity {
     }
 
     public void setOpeningCash(BigDecimal openingCash) {
-        requireMutable();
         this.openingCash = openingCash;
-    }
-
-    public BigDecimal getClosingRevenue() {
-        return closingRevenue;
-    }
-
-    public BigDecimal getClosingCashSales() {
-        return closingCashSales;
-    }
-
-    public BigDecimal getClosingCashRefunds() {
-        return closingCashRefunds;
-    }
-
-    public BigDecimal getClosingExpectedCash() {
-        return closingExpectedCash;
-    }
-
-    public BigDecimal getClosingActualCash() {
-        return closingActualCash;
-    }
-
-    public BigDecimal getClosingDifference() {
-        return closingDifference;
-    }
-
-    public void close(Timestamp time, BigDecimal revenue, BigDecimal cashSales, BigDecimal cashRefunds,
-                      BigDecimal expectedCash, BigDecimal actualCash, BigDecimal difference) {
-        if (!"OPEN".equals(status)) {
-            throw new IllegalStateException("Chỉ được kết thúc ca đang mở.");
-        }
-        this.closedAt = time;
-        this.closingRevenue = revenue;
-        this.closingCashSales = cashSales;
-        this.closingCashRefunds = cashRefunds;
-        this.closingExpectedCash = expectedCash;
-        this.closingActualCash = actualCash;
-        this.closingDifference = difference;
-        this.status = "CLOSED";
-    }
-
-    private void requireMutable() {
-        if ("CLOSED".equals(status)) {
-            throw new IllegalStateException("Ca đã kết thúc, không được thay đổi số liệu bàn giao.");
-        }
     }
 
 }

@@ -32,8 +32,7 @@ public class SaleService {
         String key = PosSupport.requestKey(requestKey);
         var replay = db.orderByKey(key);
         if (replay.isPresent()) {
-            var order = ownedOrder(username, PosSupport.id(replay.get(), "id"));
-            requireOpen(db.shift(PosSupport.id(order, "shift_id")).orElseThrow());
+            ownedOrder(username, PosSupport.id(replay.get(), "id"));
             return PosSupport.id(replay.get(), "id");
         }
         long employee = PosSupport.id(db.employee(PosSupport.id(actor, "id"))
@@ -208,8 +207,6 @@ public class SaleService {
     @Transactional
     public long pay(String username, long orderId, Forms.Payment form) {
         var order = ownedOrder(username, orderId);
-        // Even an idempotent replay must not be accepted as a payment on a closed shift.
-        requireOpen(db.shift(PosSupport.id(order, "shift_id")).orElseThrow());
         long actor = PosSupport.id(PosSupport.actor(db, username, "CASHIER"), "id");
         String method = method(form.method());
         BigDecimal received = PosSupport.money(form.received(), "Số tiền nhận");
@@ -287,7 +284,6 @@ public class SaleService {
     @Transactional
     public void fail(String username, long orderId, String method, String requestKey) {
         var order = ownedOrder(username, orderId);
-        requireOpen(db.shift(PosSupport.id(order, "shift_id")).orElseThrow());
         String key = PosSupport.requestKey(requestKey);
         method(method);
         var replay = db.paymentByKey(key);
@@ -307,8 +303,7 @@ public class SaleService {
     public Map<String, Object> invoice(String username, long id) {
         var actor = PosSupport.actor(db, username, null);
         var invoice = db.invoice(id).orElseThrow(() -> new BusinessException("Hóa đơn không tồn tại."));
-        if (!"MANAGER".equals(actor.get("role_code")) && !"ADMIN".equals(actor.get("role_code"))
-                && PosSupport.id(invoice, "issued_by") != PosSupport.id(actor, "id")) {
+        if (!"MANAGER".equals(actor.get("role_code")) && PosSupport.id(invoice, "issued_by") != PosSupport.id(actor, "id")) {
             throw new AccessDeniedException("Không có quyền xem hóa đơn này.");
         }
         invoice.put("items", db.items(PosSupport.id(invoice, "order_id")));

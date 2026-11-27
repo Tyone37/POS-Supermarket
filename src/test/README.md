@@ -1,7 +1,7 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 95 ca hiện có và thêm 44 ca cho tóm tắt ca; tổng cộng 139 ca.
+Giữ nguyên 139 ca hiện có và thêm 82 ca SCRUM-50; tổng cộng 221 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -24,6 +24,9 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-48 | US-CA-02 Mở ca | `service/Scrum48MoCaTest.java` | 13 |
 | SCRUM-49 | US-CA-03 Tóm tắt ca | `service/Scrum49TomTatCaTest.java` | 40 |
 | SCRUM-49 | Render trang và quyền tóm tắt ca | `controller/Scrum49TomTatCaViewTest.java` | 4 |
+| SCRUM-50 | Kết thúc/đối soát ca | `service/Scrum50KetThucCaTest.java` | 51 |
+| SCRUM-50 | Form, xác nhận, CSRF và quyền | `controller/Scrum50KetThucCaViewTest.java` | 27 |
+| SCRUM-50 | Lưu snapshot entity, không dùng database | `repository/Scrum50LuuKetQuaCaTest.java` | 4 |
 
 `controller/SecurityTestSupport.java` chỉ chứa cấu hình MockMvc và dữ liệu tài khoản dùng chung,
 không có hàm `@Test`. Ba file SCRUM-24/25/26 sử dụng cấu hình này. SCRUM-24 giữ cả test xác thực
@@ -37,6 +40,11 @@ Test repository H2 đã được bỏ theo yêu cầu; dependency H2 cũng đư�
 Unit test chỉ kiểm tra tham số gọi repository và dữ liệu trả về giả lập,
 không thay thế kiểm thử JPQL, CHECK/FK/unique hoặc transaction trên MySQL riêng.
 
+SCRUM-50 bao phủ tiền âm/trống/chữ/lẻ/vượt giới hạn; ca chưa mở/đã đóng/khác chủ;
+tiền mặt/chuyển khoản, hoàn tiền mặt và chênh lệch; số liệu thay đổi; token khác phiên/sai/đã dùng;
+thiếu xác nhận/CSRF và sửa số tiền từ client. Test lưu entity dùng EntityManager mock, không thêm H2.
+AC5 cần nghiệm thu thêm bằng các khoản hoàn thật trên DB thử riêng theo thiết kế.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -49,6 +57,7 @@ Chạy riêng một story:
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test
 mvn.cmd -B "-Dtest=Scrum49TomTatCaTest" test
+mvn.cmd -B "-Dtest=Scrum50KetThucCaTest,Scrum50KetThucCaViewTest,Scrum50LuuKetQuaCaTest" test
 ```
 
 Kết quả trong `target/surefire-reports`, tách theo tên file/story.

@@ -213,6 +213,44 @@ public class PosController {
         return "redirect:/sales/" + id;
     }
 
+    @PostMapping("/sales/{id}/discount/coupon")
+    public String applyCoupon(Principal actor, @PathVariable long id,
+                              @RequestParam(defaultValue = "") String couponCode,
+                              @RequestParam(defaultValue = "false") boolean confirmed,
+                              RedirectAttributes flash) {
+        try {
+            sales.applyCoupon(actor.getName(), id, couponCode, confirmed);
+            flash.addFlashAttribute("message", "Đã áp dụng mã coupon cho đơn hàng.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/sales/" + id;
+    }
+
+    @PostMapping("/sales/{id}/discount/direct")
+    public String applyDirectDiscount(Principal actor, @PathVariable long id,
+                                      @ModelAttribute Forms.DirectDiscount form,
+                                      RedirectAttributes flash) {
+        try {
+            sales.applyDirectDiscount(actor.getName(), id, form);
+            flash.addFlashAttribute("message", "Đã áp dụng giảm giá trực tiếp.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/sales/" + id;
+    }
+
+    @PostMapping("/sales/{id}/discount/clear")
+    public String clearDiscount(Principal actor, @PathVariable long id, RedirectAttributes flash) {
+        try {
+            sales.clearOrderDiscount(actor.getName(), id);
+            flash.addFlashAttribute("message", "Đã gỡ bỏ ưu đãi khỏi đơn hàng.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/sales/" + id;
+    }
+
     @GetMapping("/sales/{id}/remove/{itemId}")
     public String removeConfirm(Principal actor, @PathVariable long id, @PathVariable long itemId, Model model) {
         var order = sales.view(actor.getName(), id);

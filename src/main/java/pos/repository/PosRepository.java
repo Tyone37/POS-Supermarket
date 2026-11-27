@@ -228,6 +228,14 @@ public class PosRepository {
         return p.getId();
     }
 
+    public void changeProductStatus(long id, String status, Timestamp now) {
+        var product = em.find(ProductEntity.class, id);
+        product.setStatus(status);
+        product.setStoppedAt("STOPPED".equals(status) ? now : null);
+        product.setUpdatedAt(now);
+        em.flush();
+    }
+
     public boolean hasProductHistory(long id) {
         return !query("select i.id from OrderItemEntity i where i.productId=:id", Long.class, "id", id)
                 .setMaxResults(1).getResultList().isEmpty()

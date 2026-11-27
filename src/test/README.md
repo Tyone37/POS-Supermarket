@@ -1,8 +1,8 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 428 ca Java hiện có và thêm 60 ca SCRUM-29; tổng cộng 488 ca Java.
-SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 494 ca.
+Giữ nguyên 488 ca Java hiện có và thêm 49 ca SCRUM-30; tổng cộng 537 ca Java.
+SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 543 ca.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
@@ -22,6 +22,9 @@ File trong bảng tính từ `src/test/java/pos/`.
 | SCRUM-29 | Sửa sản phẩm, validation, mã trùng, quyền, snapshot và phiên bản form | `service/Scrum29SuaSanPhamTest.java` | 42 |
 | SCRUM-29 | Form sửa, lỗi dữ liệu, CSRF và quyền HTTP | `controller/Scrum29SuaSanPhamViewTest.java` | 15 |
 | SCRUM-29 | Ghi thuộc tính, giữ trạng thái và biến động kho | `repository/Scrum29LuuSanPhamTest.java` | 3 |
+| SCRUM-30 | Ngừng/kích hoạt, tìm/quét, quyền, gửi lặp và lịch sử | `service/Scrum30TrangThaiSanPhamTest.java` | 31 |
+| SCRUM-30 | Form đổi trạng thái, nhãn danh mục, CSRF và quyền | `controller/Scrum30TrangThaiSanPhamViewTest.java` | 15 |
+| SCRUM-30 | Trạng thái/stopped_at và giữ thuộc tính khác | `repository/Scrum30LuuTrangThaiSanPhamTest.java` | 3 |
 | SCRUM-35 | U1.1 Quét/thêm sản phẩm vào đơn | `service/Scrum35ThemSanPhamVaoDonTest.java` | 1 |
 | SCRUM-36 | U1.2 Tìm kiếm sản phẩm | `service/Scrum36TimSanPhamTest.java` | 4 |
 | SCRUM-37 | U1.3 Điều chỉnh số lượng/xóa dòng | `service/Scrum37DieuChinhSoLuongTest.java` | 7 |
@@ -111,6 +114,17 @@ sau rollback so sánh sản phẩm và số lượng đơn/ca/hóa đơn/movemen
 HTTP thật: MANAGER mở form 200, gửi giá 0 trả 400 và giữ sản phẩm; CASHIER/ADMIN mở form trả 403.
 Helper kiểm tra DB là công cụ tạm trong target, không nằm trong bộ unit test mặc định.
 
+SCRUM-30 bao phủ chuyển ACTIVE/STOPPED, gửi lặp không sửa thời điểm, phiên bản cũ/sai,
+quyền MANAGER/tài khoản khóa/không tồn tại, ID/trạng thái không hợp lệ;
+lọc danh mục tại quầy, vẫn giữ hàng ngừng bán trong quản lý, quét barcode/SKU bị từ chối cả với kết quả trang cũ,
+kích hoạt lại cho tìm/quét/thêm dòng mới; hóa đơn và giá lịch sử giữ nguyên.
+MockMvc kiểm tra POST trạng thái có CSRF, GET không ghi, nhãn/nút danh mục đúng theo trạng thái.
+MySQL local: thử ngừng bán → tìm/quét bị chặn → kích hoạt → thêm dòng bán được trong transaction rollback;
+stopped_at đúng ràng buộc và không đổi khi gửi lặp, DTO in/hóa đơn cũ không đổi.
+Sau rollback kiểm tra sản phẩm và số bản ghi nghiệp vụ trở về ban đầu.
+HTTP thật: MANAGER gửi lặp trạng thái hiện tại được redirect, CASHIER/ADMIN POST có CSRF nhận 403;
+không để lại thay đổi danh mục từ lượt kiểm tra. Helper DB nằm tạm trong target, không thuộc bộ unit test mặc định.
+
 Chạy toàn bộ:
 
 ```powershell
@@ -123,6 +137,7 @@ Chạy riêng một story:
 ```powershell
 mvn.cmd -B "-Dtest=Scrum24DangNhapTest" test
 mvn.cmd -B "-Dtest=Scrum29*" test
+mvn.cmd -B "-Dtest=Scrum30*" test
 mvn.cmd -B "-Dtest=Scrum45*" test
 mvn.cmd -B "-Dtest=Scrum46*" test
 mvn.cmd -B "-Dtest=Scrum48MoCaTest" test

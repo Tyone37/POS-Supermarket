@@ -152,6 +152,7 @@ button:disabled { cursor:not-allowed; }
 @media(max-width:600px){.category-label{font-size:11px}.category-toolbar{gap:8px}.pos-app .category-tabs .chip{min-height:40px;padding:7px 10px}}
 
 .product-status-form { display:inline-flex; margin:0; }
+<<<<<<< HEAD
 
 /* Product checkboxes must not inherit full-width text input sizing. */
 .field input[type="checkbox"][name="productIds"] {
@@ -162,3 +163,5 @@ button:disabled { cursor:not-allowed; }
   margin:0;
   padding:0;
 }
+=======
+>>>>>>> parent of 05ff4cb (revert: restore project to 2dd8a34)

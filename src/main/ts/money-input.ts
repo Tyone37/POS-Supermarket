@@ -15,7 +15,7 @@ function parseMoneyInput(value: string): string | null {
 }
 
 (() => {
-  document.querySelectorAll<HTMLInputElement>('input[name="price"],input[name="openingCash"],input[name="received"]').forEach(input => {
+  document.querySelectorAll<HTMLInputElement>('input[name="price"],input[name="openingCash"],input[name="received"],input[name="actualCash"]').forEach(input => {
     const minimum = BigInt(input.min || '0');
     const maximum = BigInt(input.max || '9999999999999999');
     input.type = 'text'; input.inputMode = 'text'; input.autocomplete = 'off'; input.maxLength = 40;

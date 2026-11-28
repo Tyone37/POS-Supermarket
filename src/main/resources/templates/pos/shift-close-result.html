@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><body>
+<section th:fragment="result" class="card" th:if="${shift != null and shift.status == 'CLOSED'}">
+  <h2>Kết quả bàn giao đã lưu</h2>
+  <dl class="spaced">
+    <dt>Giờ kết thúc</dt><dd th:text="${@posTime.format(shift.closed_at)}"></dd>
+    <dt>Tiền đầu ca</dt><dd th:text="${#numbers.formatDecimal(shift.opening_cash,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Doanh thu sau giảm</dt><dd th:text="${#numbers.formatDecimal(shift.closing_revenue,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Bán hàng tiền mặt</dt><dd th:text="${#numbers.formatDecimal(shift.closing_cash_sales,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Hoàn tiền mặt trong ca</dt><dd th:text="${#numbers.formatDecimal(shift.closing_cash_refunds,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Tiền mặt dự kiến</dt><dd th:text="${#numbers.formatDecimal(shift.closing_expected_cash,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Tiền mặt thực tế</dt><dd th:text="${#numbers.formatDecimal(shift.closing_actual_cash,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+    <dt>Chênh lệch</dt><dd th:text="${#numbers.formatDecimal(shift.closing_difference,1,'POINT',0,'COMMA')} + ' VNĐ'"></dd>
+  </dl>
+</section>
+</body></html>

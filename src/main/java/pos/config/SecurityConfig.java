@@ -14,6 +14,7 @@ import pos.repository.AccountRepository;
 
 @Configuration
 public class SecurityConfig {
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -24,7 +25,8 @@ public class SecurityConfig {
         // Check credentials before account status so a wrong password does not disclose locked accounts.
         var provider = new DaoAuthenticationProvider(users);
         provider.setPasswordEncoder(encoder);
-        provider.setPreAuthenticationChecks(user -> { });
+        provider.setPreAuthenticationChecks(user -> {
+        });
         provider.setPostAuthenticationChecks(user -> {
             if (!user.isEnabled()) {
                 throw new org.springframework.security.authentication.DisabledException("Tài khoản đã bị khóa.");
@@ -35,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider,
-                                                   AccountRepository accounts)
+            AccountRepository accounts)
             throws Exception {
         http.authenticationProvider(provider)
                 .authorizeHttpRequests(requests -> requests
@@ -49,15 +51,14 @@ public class SecurityConfig {
                         .requestMatchers("/promotions", "/promotions/**").hasRole("MANAGER")
                         .requestMatchers("/coupons", "/coupons/**").hasRole("MANAGER")
                         .requestMatchers("/shifts", "/shifts/**", "/sales", "/sales/**").hasRole("CASHIER")
-                        .requestMatchers("/invoices", "/invoices/**").hasAnyRole("CASHIER", "MANAGER", "ADMIN")
+                        .requestMatchers("/invoices/**").hasAnyRole("CASHIER", "MANAGER")
                         .requestMatchers("/").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new ActiveAccountFilter(accounts), AuthorizationFilter.class)
                 .formLogin(form -> form.loginPage("/login")
                         .defaultSuccessUrl("/", true)
                         .failureHandler((request, response, exception) -> {
-                            String reason = exception instanceof
-                                    org.springframework.security.authentication.DisabledException ? "locked" : "invalid";
+                            String reason = exception instanceof org.springframework.security.authentication.DisabledException ? "locked" : "invalid";
                             response.sendRedirect(request.getContextPath() + "/login?error=" + reason);
                         }).permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/login?logout")

@@ -2,14 +2,13 @@ package pos.automation;
 
 import java.util.List;
 import java.util.Map;
-import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import pos.config.TransferSettings;
-import pos.dto.ShiftSummary;
 import pos.controller.PosController;
 import pos.service.AccountAdminService;
 import pos.service.CatalogService;
@@ -43,14 +42,13 @@ class TrangThaiCa {
     @Test
     void xemTrangThaiCaDangMo() throws Exception {
         Map<String, Object> currentShift = Map.of("id", 30L, "status", "OPEN");
-        when(shifts.summary("cashier")).thenReturn(
-                new ShiftSummary(currentShift, List.of(), BigDecimal.ZERO, BigDecimal.ZERO));
+        when(shifts.current("cashier")).thenReturn(Optional.of(currentShift));
         when(shifts.registers()).thenReturn(List.of());
 
         mvc.perform(get("/shifts").principal(() -> "cashier"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("pos/shifts"))
                 .andExpect(model().attribute("shift", currentShift));
-        verify(shifts).summary("cashier");
+        verify(shifts).current("cashier");
     }
 }

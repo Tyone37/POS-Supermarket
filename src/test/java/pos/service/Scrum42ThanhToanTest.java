@@ -141,4 +141,5 @@ class Scrum42ThanhToanTest {
         assertThrows(BusinessException.class, () -> service.pay("cashier", 10L, form));
         verify(db, never()).markPaid(anyLong(), any());
     }
+
 }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Quản lý coupon')}"></head>
+<body class="pos-app">
+<div class="frame">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+    <main class="page" id="main-content" tabindex="-1" data-current-page="coupons">
+      <div class="pagehead">
+        <div><h1>Quản lý coupon</h1><p>Mã nhập tại quầy, áp dụng cho toàn đơn hoặc một sản phẩm. Không cộng dồn ưu đãi.</p></div>
+        <div class="actions"><a class="btn" th:href="@{/promotions}">Khuyến mãi tự động</a><a class="btn primary" th:href="@{/coupons/new}">Tạo coupon</a></div>
+      </div>
+      <div th:replace="~{layout/pos :: feedback}"></div>
+      <form class="card" method="get" th:action="@{/coupons}">
+        <label class="field">Tìm theo mã hoặc tên<input name="q" maxlength="200" th:value="${q}" placeholder="Nhập mã hoặc tên coupon"></label>
+        <button class="btn primary" type="submit">Tìm kiếm</button>
+      </form>
+      <article class="card table-card">
+        <div class="tablewrap"><table>
+          <thead><tr><th>Mã / Tên</th><th>Phạm vi</th><th>Mức giảm</th><th>Đơn tối thiểu</th><th>Thời gian áp dụng</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${result.items}">
+              <td><strong th:text="${c.code}"></strong><div th:text="${c.name}"></div></td>
+              <td><span th:text="${c.scope == 'PRODUCT' ? 'Một sản phẩm' : 'Toàn đơn'}"></span><div class="small muted" th:if="${c.scope == 'PRODUCT'}" th:text="${c.product_name}"></div></td>
+              <td th:text="${c.discount_value.stripTrailingZeros().toPlainString()} + ${c.discount_type == 'PERCENT' ? '%' : ' VNĐ'}"></td>
+              <td th:text="${#numbers.formatDecimal(c.min_order_amount,1,'POINT',0,'COMMA')} + ' VNĐ'"></td>
+              <td><div th:text="${@posTime.format(c.starts_at)}"></div><div th:text="${@posTime.format(c.ends_at)}"></div></td>
+              <td th:text="${c.lifecycle_status == 'ENABLED' ? 'Đã bật' : 'Đã tắt'}"></td>
+              <td><a class="btn" th:href="@{/coupons/{id}/edit(id=${c.id})}">Sửa</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(result.items)}"><td colspan="7">Không có coupon phù hợp.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small muted">Coupon đã bật chỉ áp dụng trong thời gian hiệu lực và khi đơn đạt giá trị tối thiểu.</p>
+        <div class="actions">
+          <a class="btn" th:if="${result.page > 0}" th:href="@{/coupons(q=${q},page=${result.page - 1})}">Trang trước</a>
+          <span th:text="'Trang ' + ${result.page + 1}"></span>
+          <a class="btn" th:if="${result.hasNext}" th:href="@{/coupons(q=${q},page=${result.page + 1})}">Trang sau</a>
+        </div>
+      </article>
+    </main>
+  </div>
+</div>
+</body></html>

@@ -1,13 +1,26 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-Giữ nguyên 90 ca đã có và thêm 5 ca cơ bản cho hai story hóa đơn; tổng cộng 95 ca.
+Nhánh `fix/gop-code-tin-lam` hiện có 223 ca Java, gồm khuyến mãi/coupon và các chức năng nền còn trong nhánh.
+Các chức năng SCRUM-29/30, SCRUM-45/46 và SCRUM-49–52 đã được tách khỏi nhánh này.
+Hai bộ test service SCRUM-29/30 còn sót đã được loại khỏi nhánh cùng các tham chiếu đến DTO/service đã xóa; bản cũ vẫn có trong lịch sử Git.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
 
 | Jira | User story | File test | Số ca |
 |---|---|---|---:|
+| Coupon | Phân bổ toàn đơn/sản phẩm, số lượng, điều kiện và làm tròn | `service/CouponDiscountCalculatorTest.java` | 20 |
+| Coupon | Quản lý mã, phạm vi, sản phẩm, thời gian, phân trang và quyền | `service/CouponServiceTest.java` | 34 |
+| Coupon | Thay thế ưu đãi, sửa giỏ và chặn thanh toán coupon cũ | `service/CouponSaleServiceTest.java` | 12 |
+| Coupon | Form/list/edit, ràng buộc, CSRF và quyền HTTP | `controller/CouponControllerTest.java` | 13 |
+| Sửa lỗi khuyến mãi | Danh sách/chi tiết chỉ đọc không khóa ghi, vẫn kiểm tra quyền | `service/PromotionReadOnlyTest.java` | 9 |
+| tin-lam | Tạo khuyến mãi | `service/UsKm01TaoKhuyenMaiTest.java` | 5 |
+| tin-lam | Chỉnh sửa/hủy khuyến mãi | `service/UsKm02ChinhSuaHuyKhuyenMaiTest.java` | 8 |
+| tin-lam | Tự động áp dụng khuyến mãi | `service/UsKm03ApDungKhuyenMaiTest.java` | 5 |
+| tin-lam | Giảm giá đơn hàng, checkbox vắng mặt và mức giảm trống | `service/U14GiamGiaDonHangTest.java` | 9 |
+| Sửa lỗi form giảm giá | Binding trường tùy chọn, checkbox và lỗi nhập liệu | `controller/DirectDiscountFormViewTest.java` | 7 |
+| tin-lam + coupon | Xóa sản phẩm, chặn sản phẩm được coupon tham chiếu | `service/UsSp04XoaSanPhamTest.java` | 6 |
 | SCRUM-24 | US-DN-01 Đăng nhập | `controller/Scrum24DangNhapTest.java` | 10 |
 | SCRUM-25 | US-DN-02 Đăng xuất | `controller/Scrum25DangXuatTest.java` | 3 |
 | SCRUM-26 | US-DN-03 Phân quyền | `controller/Scrum26PhanQuyenTest.java` | 11 |
@@ -27,6 +40,12 @@ File trong bảng tính từ `src/test/java/pos/`.
 không có hàm `@Test`. Ba file SCRUM-24/25/26 sử dụng cấu hình này. SCRUM-24 giữ cả test xác thực
 trực tiếp và test request/HTML. Các file trong `service` là unit test với repository giả.
 Không kết nối MySQL hay thay đổi dữ liệu ứng dụng.
+
+Sửa lỗi khuyến mãi: `PromotionService.list/get` kiểm tra tài khoản không dùng khóa ghi trong transaction chỉ đọc.
+Các tác vụ ghi vẫn dùng cách khóa cũ. Test bao phủ quyền Manager, tài khoản khóa/không tồn tại,
+vai trò khác, danh sách rỗng/có dữ liệu và chi tiết không tồn tại/có sản phẩm áp dụng.
+Đã kiểm tra lại với MySQL local và đăng nhập HTTP bằng Manager: `/promotions` trả 200;
+database kiểm tra hiện không có chương trình khuyến mãi, lượt kiểm tra không thêm/sửa dữ liệu.
 
 Chạy toàn bộ:
 

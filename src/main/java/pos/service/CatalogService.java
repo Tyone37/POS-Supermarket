@@ -38,6 +38,42 @@ public class CatalogService {
     public List<Map<String, Object>> categories() { return db.categories(); }
     public List<Map<String, Object>> units() { return db.units(); }
 
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> stoppedProducts(String query) {
+        String term = PosSupport.normalized(query);
+        return db.products(null).stream()
+                .filter(row -> "STOPPED".equals(row.get("status")))
+                .filter(row -> term.isEmpty()
+                        || PosSupport.normalized(row.get("name").toString()).contains(term)
+                        || PosSupport.normalized(row.get("code").toString()).contains(term)
+                        || row.get("barcode").toString().contains(term))
+                .limit(100)
+                .toList();
+    }
+
+    @Transactional
+    public void delete(String actor, long productId, boolean confirmed) {
+        PosSupport.actor(db, actor, "MANAGER");
+        if (!confirmed) {
+            throw new BusinessException("Vui lòng xác nhận xóa vĩnh viễn sản phẩm.");
+        }
+        var product = db.product(productId, true)
+                .orElseThrow(() -> new BusinessException("Sản phẩm không tồn tại."));
+        if (!"STOPPED".equals(product.get("status"))) {
+            throw new BusinessException("Chỉ được xóa sản phẩm đã ngừng bán.");
+        }
+        if (db.productHasInvoice(productId)) {
+            throw new BusinessException("Không thể xóa sản phẩm đã xuất hiện trên hóa đơn.");
+        }
+        if (db.productHasOrderItem(productId)) {
+            throw new BusinessException("Không thể xóa sản phẩm đang có trong đơn hàng.");
+        }
+        if (db.productHasCoupons(productId)) {
+            throw new BusinessException("Sản phẩm đang được cấu hình trong coupon, không thể xóa.");
+        }
+        db.deleteProduct(productId);
+    }
+
     @Transactional
     public long create(String actor, Forms.Product form) {
         PosSupport.actor(db, actor, "MANAGER");

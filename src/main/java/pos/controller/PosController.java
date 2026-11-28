@@ -51,7 +51,9 @@ public class PosController {
 
     @GetMapping("/shifts")
     public String shifts(Principal actor, Model model) {
-        model.addAttribute("shift", shifts.current(actor.getName()).orElse(null));
+        var summary = shifts.summary(actor.getName());
+        model.addAttribute("shift", summary.shift());
+        model.addAttribute("summary", summary);
         model.addAttribute("registers", shifts.registers());
         return "pos/shifts";
     }
@@ -300,6 +302,9 @@ public class PosController {
     @GetMapping("/sales/{id}/checkout")
     public String checkout(Principal actor, @PathVariable long id, Model model) {
         var order = sales.view(actor.getName(), id);
+        if ("DRAFT".equals(order.get("status")) && !Boolean.TRUE.equals(order.get("shift_open"))) {
+            return "redirect:/shifts";
+        }
         model.addAttribute("order", order);
         model.addAttribute("items", sales.items(actor.getName(), id));
         model.addAttribute("payments", sales.payments(actor.getName(), id));
@@ -323,6 +328,9 @@ public class PosController {
             model.addAttribute("error", ex instanceof BusinessException ? ex.getMessage()
                     : "Mã tham chiếu hoặc mã yêu cầu đã được sử dụng. Vui lòng kiểm tra lại giao dịch.");
             model.addAttribute("paymentForm", form);
+            if (!Boolean.TRUE.equals(sales.view(actor.getName(), id).get("shift_open"))) {
+                return "pos/error";
+            }
             return checkout(actor, id, model);
         }
     }

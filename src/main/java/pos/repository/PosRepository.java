@@ -14,6 +14,8 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import pos.dto.ShiftInvoice;
+import pos.dto.ShiftClosePreview;
 import pos.entity.AccountEntity;
 import pos.entity.RoleEntity;
 import pos.entity.EmployeeEntity;
@@ -139,6 +141,26 @@ public class PosRepository {
         return query("select s from ShiftEntity s where s.openRequestKey=:key", ShiftEntity.class, "key", key)
                 .setMaxResults(1).getResultList().stream().findFirst().map(this::map);
     }
+
+    @Transactional(readOnly = true)
+    public List<ShiftInvoice> completedShiftInvoices(long shiftId, long accountId) {
+        return query("""
+                select i, p.method
+                from InvoiceEntity i, PaymentEntity p, OrderEntity o, ShiftEntity s, EmployeeEntity e
+                where i.paymentId = p.id and p.orderId = o.id and i.orderId = o.id
+                  and o.shiftId = s.id and s.employeeId = e.id
+                  and s.id = :shiftId and s.status = 'OPEN'
+                  and e.accountId = :accountId and i.issuedBy = :accountId
+                  and i.status = 'ISSUED' and o.status = 'PAID' and p.status = 'SUCCESS'
+                order by i.issuedAt desc, i.id desc
+                """, Object[].class, "shiftId", shiftId, "accountId", accountId)
+                .getResultList().stream().map(values -> {
+                    var invoice = (InvoiceEntity) values[0];
+                    return new ShiftInvoice(invoice.getId(), invoice.getInvoiceNo(),
+                            invoice.getCashierNameSnapshot(), invoice.getIssuedAt(),
+                            invoice.getTotalAmount(), (String) values[1]);
+                }).toList();
+    }
     public Optional<Map<String, Object>> shift(long id) {
         return find(ShiftEntity.class, id, true).map(s -> {
             var result = map(s);
@@ -160,6 +182,25 @@ public class PosRepository {
                     var result = productRow((ProductEntity) values[0], (UnitEntity) values[2]);
                     result.put("category_name", values[1]); return result;
                 }).toList();
+    }
+
+    public void closeShift(ShiftClosePreview closing, Timestamp closedAt) {
+        var shift = em.find(ShiftEntity.class, closing.shiftId());
+        shift.close(closedAt, closing.revenue(), closing.cashSales(), closing.cashRefunds(),
+                closing.expectedCash(), closing.actualCash(), closing.difference());
+        em.flush();
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal completedCashRefunds(long shiftId, long accountId) {
+        return query("""
+                select coalesce(sum(p.refundAmount), 0)
+                from RefundPaymentEntity p, ReturnReceiptEntity r, ShiftEntity s, EmployeeEntity e
+                where p.returnReceiptId = r.id and p.shiftId = s.id and s.employeeId = e.id
+                  and s.id = :shiftId and s.status = 'OPEN' and e.accountId = :accountId
+                  and p.confirmedBy = :accountId and r.status = 'COMPLETED'
+                  and p.status = 'SUCCESS' and p.method = 'CASH'
+                """, BigDecimal.class, "shiftId", shiftId, "accountId", accountId).getSingleResult();
     }
     private Map<String, Object> productRow(ProductEntity p, UnitEntity u) {
         var result = map(p); result.put("unit_code", u.getCode()); result.put("unit_name", u.getName());
@@ -210,6 +251,47 @@ public class PosRepository {
         }
     }
 
+    public void changeProductStatus(long id, String status, Timestamp now) {
+        var product = em.find(ProductEntity.class, id);
+        product.setStatus(status);
+        product.setStoppedAt("STOPPED".equals(status) ? now : null);
+        product.setUpdatedAt(now);
+        em.flush();
+    }
+
+    public boolean hasProductHistory(long id) {
+        return !query("select i.id from OrderItemEntity i where i.productId=:id", Long.class, "id", id)
+                .setMaxResults(1).getResultList().isEmpty()
+                || !query("select m.id from InventoryMovementEntity m where m.productId=:id", Long.class, "id", id)
+                .setMaxResults(1).getResultList().isEmpty();
+    }
+
+    public void updateProduct(long id, String barcode, String name, long category, long unit,
+                              BigDecimal price, BigDecimal stock, String image, Timestamp now) {
+        var product = em.find(ProductEntity.class, id);
+        BigDecimal delta = stock.subtract(product.getStockQuantity());
+        product.setBarcode(barcode);
+        product.setName(name);
+        product.setCategoryId(category);
+        product.setUnitId(unit);
+        product.setSalePrice(price);
+        product.setStockQuantity(stock);
+        product.setImageUrl(image);
+        product.setUpdatedAt(now);
+        if (delta.signum() != 0) {
+            var movement = new InventoryMovementEntity();
+            movement.setEventKey("PRODUCT-EDIT-" + java.util.UUID.randomUUID());
+            movement.setProductId(id);
+            movement.setProductCodeSnapshot(product.getCode());
+            movement.setMovementType("ADJUSTMENT");
+            movement.setQuantityDelta(delta);
+            movement.setReason("Cập nhật tồn kho từ danh mục sản phẩm");
+            movement.setCreatedAt(now);
+            em.persist(movement);
+        }
+        em.flush();
+    }
+
     public Optional<Map<String, Object>> order(long id, boolean lock) {
         return find(OrderEntity.class, id, lock).map(this::map);
     }
@@ -234,6 +316,10 @@ public class PosRepository {
                 Object[].class, "id", order).getResultList().stream().map(values -> {
                     var result = map((OrderItemEntity) values[0]); result.put("quantity_scale", values[1]); return result;
                 }).toList();
+    }
+    public List<Map<String, Object>> invoiceItems(long order) {
+        return query("select i from OrderItemEntity i where i.orderId=:id order by i.productId",
+                OrderItemEntity.class, "id", order).getResultList().stream().map(this::map).toList();
     }
     public void createItem(long order, Map<String, Object> product) {
         createItem(order, product, BigDecimal.ONE, BigDecimal.ZERO, (BigDecimal) product.get("sale_price"), null, null, null);
@@ -483,7 +569,13 @@ public class PosRepository {
                 "open_request_key", value.getOpenRequestKey(),
                 "opened_at", value.getOpenedAt(),
                 "closed_at", value.getClosedAt(),
-                "opening_cash", value.getOpeningCash());
+                "opening_cash", value.getOpeningCash(),
+                "closing_revenue", value.getClosingRevenue(),
+                "closing_cash_sales", value.getClosingCashSales(),
+                "closing_cash_refunds", value.getClosingCashRefunds(),
+                "closing_expected_cash", value.getClosingExpectedCash(),
+                "closing_actual_cash", value.getClosingActualCash(),
+                "closing_difference", value.getClosingDifference());
     }
 
     private Map<String, Object> map(ProductCategoryEntity value) {

@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import pos.dto.ShiftInvoice;
+import pos.dto.ShiftSummary;
 import pos.exception.BusinessException;
 import pos.repository.PosRepository;
 
@@ -20,6 +22,22 @@ public class ShiftService {
     public Optional<Map<String, Object>> current(String username) {
         var actor = PosSupport.actor(db, username, "CASHIER");
         return db.latestShift(employeeId(PosSupport.id(actor, "id")));
+    }
+
+    @Transactional
+    public ShiftSummary summary(String username) {
+        var actor = PosSupport.actor(db, username, "CASHIER");
+        var shift = db.latestShift(employeeId(PosSupport.id(actor, "id"))).orElse(null);
+        if (shift == null || !"OPEN".equals(shift.get("status"))) {
+            return new ShiftSummary(shift, List.of(), BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        var invoices = db.completedShiftInvoices(PosSupport.id(shift, "id"), PosSupport.id(actor, "id"));
+        BigDecimal revenue = invoices.stream().map(ShiftInvoice::totalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal cashRevenue = invoices.stream().filter(invoice -> "CASH".equals(invoice.method()))
+                .map(ShiftInvoice::totalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new ShiftSummary(shift, invoices, revenue, cashRevenue);
     }
 
     public List<Map<String, Object>> registers() { return db.registers(); }

@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -101,6 +102,39 @@ public class PosController {
         }
     }
 
+    @GetMapping("/products/delete")
+    public String deleteProductsPage(@RequestParam(defaultValue = "") String q, Model model) {
+        model.addAttribute("products", catalog.stoppedProducts(q));
+        model.addAttribute("q", q);
+        return "pos/products-delete";
+    }
+
+    @GetMapping("/products/{id}/delete")
+    public String deleteProductConfirm(@PathVariable long id, Model model) {
+        var target = catalog.stoppedProducts("").stream()
+                .filter(row -> ((Number) row.get("id")).longValue() == id)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("Chỉ được xóa sản phẩm đã ngừng bán."));
+        return confirm(model, "Xóa vĩnh viễn sản phẩm " + target.get("name") + "?",
+                "/products/" + id + "/delete", "/products/delete", null);
+    }
+
+    @PostMapping("/products/{id}/delete")
+    public String deleteProduct(Principal actor, @PathVariable long id,
+                                @RequestParam(defaultValue = "false") boolean confirmed,
+                                Model model, jakarta.servlet.http.HttpServletResponse response,
+                                RedirectAttributes flash) {
+        try {
+            catalog.delete(actor.getName(), id, confirmed);
+            flash.addFlashAttribute("message", "Đã xóa vĩnh viễn sản phẩm khỏi danh mục.");
+            return "redirect:/products/delete";
+        } catch (BusinessException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return deleteProductsPage("", model);
+        }
+    }
+
     @GetMapping("/accounts")
     public String accounts(Principal actor, Model model) {
         model.addAttribute("accounts", accounts.list(actor.getName()));
@@ -179,6 +213,49 @@ public class PosController {
     public String quantity(Principal actor, @PathVariable long id, @RequestParam long itemId,
                            @RequestParam String quantity, @RequestParam(defaultValue = "false") boolean confirmed) {
         sales.quantity(actor.getName(), id, itemId, quantity, confirmed);
+        return "redirect:/sales/" + id;
+    }
+
+    @PostMapping("/sales/{id}/discount/coupon")
+    public String applyCoupon(Principal actor, @PathVariable long id,
+                              @RequestParam(defaultValue = "") String couponCode,
+                              @RequestParam(defaultValue = "false") boolean confirmed,
+                              RedirectAttributes flash) {
+        try {
+            sales.applyCoupon(actor.getName(), id, couponCode, confirmed);
+            flash.addFlashAttribute("message", "Đã áp dụng mã coupon cho đơn hàng.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/sales/" + id;
+    }
+
+    @PostMapping("/sales/{id}/discount/direct")
+    public String applyDirectDiscount(Principal actor, @PathVariable long id,
+                                      @ModelAttribute Forms.DirectDiscount form,
+                                      BindingResult errors,
+                                      RedirectAttributes flash) {
+        if (errors.hasErrors()) {
+            flash.addFlashAttribute("error", "Thông tin giảm giá không hợp lệ. Vui lòng kiểm tra dòng hàng và xác nhận.");
+            return "redirect:/sales/" + id;
+        }
+        try {
+            sales.applyDirectDiscount(actor.getName(), id, form);
+            flash.addFlashAttribute("message", "Đã áp dụng giảm giá trực tiếp.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/sales/" + id;
+    }
+
+    @PostMapping("/sales/{id}/discount/clear")
+    public String clearDiscount(Principal actor, @PathVariable long id, RedirectAttributes flash) {
+        try {
+            sales.clearOrderDiscount(actor.getName(), id);
+            flash.addFlashAttribute("message", "Đã gỡ bỏ ưu đãi khỏi đơn hàng.");
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/sales/" + id;
     }
 

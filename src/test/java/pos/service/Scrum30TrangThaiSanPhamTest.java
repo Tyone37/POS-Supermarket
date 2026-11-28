@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -170,14 +171,14 @@ class Scrum30TrangThaiSanPhamTest {
         catalog.changeStatus("manager", 20, form("STOPPED"));
         when(db.productsByCode(code)).thenReturn(List.of(stale));
         assertThrows(BusinessException.class, () -> sales.add("cashier", 10, code));
-        verify(db, never()).createItem(anyLong(), any());
+        verify(db, never()).createItem(anyLong(), any(), any(), any(), any(), any(), any(), any());
         verify(db, never()).items(10);
     }
 
     @Test
     void quetKhongTimThaySanPhamDangBanKhongTaoDong() {
         assertThrows(BusinessException.class, () -> sales.add("cashier", 10, "001234"));
-        verify(db, never()).createItem(anyLong(), any());
+        verify(db, never()).createItem(anyLong(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -195,7 +196,8 @@ class Scrum30TrangThaiSanPhamTest {
         catalog.changeStatus("manager", 20, form("ACTIVE"));
         when(db.productsByCode(code)).thenReturn(List.of(product));
         sales.add("cashier", 10, code);
-        verify(db).createItem(10, product);
+        verify(db).createItem(eq(10L), eq(product), eq(BigDecimal.ONE), eq(BigDecimal.ZERO),
+                eq(new BigDecimal("20000.00")), isNull(), isNull(), isNull());
     }
 
     @Test

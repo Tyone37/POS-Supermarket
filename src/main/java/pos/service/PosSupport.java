@@ -17,7 +17,11 @@ final class PosSupport {
     private PosSupport() { }
 
     static Map<String, Object> actor(PosRepository db, String username, String role) {
-        var account = db.account(username, true).orElseThrow(() -> new AccessDeniedException("Không có quyền truy cập."));
+        return actor(db, username, role, true);
+    }
+
+    static Map<String, Object> actor(PosRepository db, String username, String role, boolean lock) {
+        var account = db.account(username, lock).orElseThrow(() -> new AccessDeniedException("Không có quyền truy cập."));
         if (!"ACTIVE".equals(account.get("status")) || (role != null && !role.equals(account.get("role_code")))) {
             throw new AccessDeniedException("Không có quyền sử dụng chức năng này.");
         }

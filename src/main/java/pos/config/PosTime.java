@@ -10,9 +10,16 @@ import org.springframework.stereotype.Component;
 public class PosTime {
     private static final DateTimeFormatter DISPLAY = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
             .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
+    private static final DateTimeFormatter INPUT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+            .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
     public String format(Object value) {
         if (value instanceof Timestamp timestamp) { return DISPLAY.format(timestamp.toInstant()); }
         return value == null ? "—" : value.toString();
+    }
+
+    public String formatInput(Object value) {
+        if (value instanceof Timestamp timestamp) { return INPUT.format(timestamp.toInstant()); }
+        return "";
     }
 }

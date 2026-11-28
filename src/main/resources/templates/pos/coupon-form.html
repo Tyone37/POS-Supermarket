@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Thông tin coupon')}"></head>
+<body class="pos-app">
+<div class="frame">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+    <main class="page" id="main-content" tabindex="-1" data-current-page="coupons">
+      <div class="pagehead"><div><h1 th:text="${couponId == null ? 'Tạo coupon' : 'Sửa coupon'}"></h1><p>Coupon nhập bằng mã tại quầy. Hóa đơn đã thanh toán giữ nguyên dữ liệu.</p></div></div>
+      <div th:replace="~{layout/pos :: feedback}"></div>
+      <form class="card" th:object="${form}" method="post" th:action="${couponId == null ? '/coupons' : '/coupons/' + couponId}">
+        <div class="alert error" role="alert" th:if="${#fields.hasAnyErrors()}"><p>Vui lòng kiểm tra thông tin coupon.</p><ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px">
+          <label class="field">Mã coupon *<input th:field="*{code}" maxlength="30" required th:readonly="${couponId != null}"></label>
+          <label class="field">Tên coupon *<input th:field="*{name}" maxlength="200" required></label>
+          <label class="field">Phạm vi *<select th:field="*{scope}"><option value="ORDER">Toàn đơn hàng</option><option value="PRODUCT">Một sản phẩm</option></select></label>
+          <label class="field">Sản phẩm (chọn khi phạm vi là Một sản phẩm)<select th:field="*{productId}"><option value="">— Chọn sản phẩm —</option><option th:each="p : ${products}" th:value="${p.id}" th:text="${p.code} + ' — ' + ${p.name} + ${p.status == 'ACTIVE' ? '' : ' (Ngừng bán)'}"></option></select></label>
+          <label class="field">Loại giảm *<select th:field="*{type}"><option value="PERCENT">Phần trăm (%)</option><option value="AMOUNT">Số tiền (VNĐ)</option></select></label>
+          <label class="field">Mức giảm *<input th:field="*{value}" type="number" step="0.01" min="0.01" required></label>
+          <label class="field">Giá trị đơn tối thiểu (VNĐ) *<input th:field="*{minimum}" type="number" step="1" min="0" required></label>
+          <label class="field">Bắt đầu *<input th:field="*{startsAt}" type="datetime-local" required></label>
+          <label class="field">Kết thúc *<input th:field="*{endsAt}" type="datetime-local" required></label>
+          <label class="field">Trạng thái *<select th:field="*{status}"><option value="ENABLED">Bật</option><option value="DISABLED">Tắt</option></select></label>
+        </div>
+        <p class="small muted">Thời gian theo giờ Việt Nam. Coupon sản phẩm giảm trên toàn bộ số lượng của sản phẩm đã chọn; sản phẩm khác không được giảm. Giá trị đơn tối thiểu tính trước giảm trên toàn giỏ hàng.</p>
+        <p class="small muted">Mức giảm tiền cố định không được vượt giá trị áp dụng. Khi thay đổi giỏ hàng, coupon được tính lại hoặc tự gỡ nếu không còn đủ điều kiện.</p>
+        <div class="actions"><button class="btn primary" type="submit">Lưu coupon</button><a class="btn" th:href="@{/coupons}">Hủy</a></div>
+      </form>
+    </main>
+  </div>
+</div>
+</body></html>

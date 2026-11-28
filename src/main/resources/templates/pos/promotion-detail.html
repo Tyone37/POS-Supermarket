@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/pos :: head('Chi tiết khuyến mãi')}"></head>
+<body class="pos-app">
+<a class="skip" href="#main-content">Đến nội dung chính</a>
+<div class="frame" th:classappend="${canCashier ? 'cashier-shell' : ''}">
+  <aside th:replace="~{layout/pos :: sidebar}"></aside>
+  <button class="nav-scrim" type="button" data-close-menu aria-label="Đóng menu"></button>
+  <div class="workspace">
+    <header th:replace="~{layout/pos :: header}"></header>
+
+    <main tabindex="-1" class="page narrow" id="main-content" data-current-page="promotions"
+          th:with="status=${promo.effective_status}, editable=${status == 'UPCOMING'}, cancelable=${status == 'ACTIVE' or status == 'UPCOMING'}">
+      <div class="pagehead">
+        <div>
+          <div class="eyebrow" th:text="${promo.code} + ' · KHUYẾN MÃI SẢN PHẨM'">KM · KHUYẾN MÃI</div>
+          <h1 th:text="${promo.name}">Chi tiết khuyến mãi</h1>
+          <p>
+            <span class="badge"
+                  th:classappend="${status == 'ACTIVE' ? 'success' : (status == 'UPCOMING' ? 'warning' : (status == 'CANCELED' ? 'danger' : 'neutral'))}">
+              <span class="dot"></span>
+              <span th:text="${status == 'ACTIVE' ? 'Đang áp dụng' : (status == 'UPCOMING' ? 'Chưa bắt đầu' : (status == 'CANCELED' ? 'Đã hủy' : 'Đã kết thúc'))}"></span>
+            </span>
+            <span th:if="${promo.canceled_at != null}" class="muted small" style="margin-left: 8px;"
+                  th:text="'Đã hủy lúc: ' + ${@posTime.format(promo.canceled_at)}"></span>
+          </p>
+        </div>
+        <div class="actions">
+          <a class="btn" th:href="@{/promotions}">Quay lại danh sách</a>
+          <a th:if="${cancelable}" class="btn danger" th:href="@{/promotions/{id}/cancel(id=${promo.id})}">Kết thúc sớm / Hủy</a>
+        </div>
+      </div>
+
+      <div th:replace="~{layout/pos :: feedback}"></div>
+
+      <div th:if="${status == 'ACTIVE'}" class="notice warning" style="margin-bottom: 16px;">
+        Chương trình đang áp dụng cho bán hàng tại quầy: không thể chỉnh sửa hồi tố, chỉ được kết thúc sớm.
+      </div>
+      <div th:if="${status == 'ENDED' or status == 'CANCELED'}" class="notice" style="margin-bottom: 16px;">
+        Chương trình đã kết thúc hoặc đã hủy: chỉ được xem thông tin lịch sử, không thể chỉnh sửa. Các hóa đơn cũ vẫn giữ nguyên khoản giảm giá.
+      </div>
+
+      <article class="card" style="padding: 24px;">
+        <form th:action="@{/promotions/{id}(id=${promo.id})}" method="post" class="formgrid">
+          <div class="field">
+            <label for="detailCode">Mã khuyến mãi</label>
+            <input id="detailCode" th:value="${promo.code}" disabled>
+          </div>
+
+          <div class="field">
+            <label for="detailDiscount">Giảm giá (%) *</label>
+            <input id="detailDiscount" name="discountPercent" type="number" min="0.01" max="100" step="0.01"
+                   th:value="${form != null ? form.discountPercent : promo.discount_percent.stripTrailingZeros().toPlainString()}"
+                   th:disabled="${!editable}" required>
+          </div>
+
+          <div class="field span2">
+            <label for="detailName">Tên chương trình *</label>
+            <input id="detailName" name="name" maxlength="200"
+                   th:value="${form != null ? form.name : promo.name}"
+                   th:disabled="${!editable}" required>
+          </div>
+
+          <div class="field">
+            <label for="detailStartsAt">Thời gian bắt đầu *</label>
+            <input id="detailStartsAt" name="startsAt" type="datetime-local"
+                   th:value="${form != null ? form.startsAt : @posTime.formatInput(promo.starts_at)}"
+                   th:disabled="${!editable}" required>
+          </div>
+
+          <div class="field">
+            <label for="detailEndsAt">Thời gian kết thúc *</label>
+            <input id="detailEndsAt" name="endsAt" type="datetime-local"
+                   th:value="${form != null ? form.endsAt : @posTime.formatInput(promo.ends_at)}"
+                   th:disabled="${!editable}" required>
+          </div>
+
+          <div class="field span2">
+            <label>Sản phẩm áp dụng</label>
+            <div style="max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 6px;">
+              <label th:each="product : ${products}" style="display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 0;">
+                <input type="checkbox" name="productIds" th:value="${product.id}"
+                       th:checked="${form != null ? (form.productIds != null and form.productIds.contains(product.id)) : (promo.product_ids != null and promo.product_ids.contains(product.id))}"
+                       th:disabled="${!editable}">
+                <span th:text="${product.code} + ' — ' + ${product.name}"></span>
+              </label>
+            </div>
+          </div>
+
+          <div th:if="${editable}" class="span2 actions" style="display: flex; gap: 10px; margin-top: 12px;">
+            <button type="submit" class="btn primary" style="flex: 1;">Lưu thay đổi</button>
+            <a class="btn" th:href="@{/promotions/{id}(id=${promo.id})}">Khôi phục</a>
+          </div>
+        </form>
+      </article>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{layout/pos :: dialogs}"></th:block>
+</body>
+</html>

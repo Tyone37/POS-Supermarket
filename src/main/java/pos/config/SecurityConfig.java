@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/accounts", "/accounts/**").hasRole("ADMIN")
                         .requestMatchers("/products", "/products/**").hasRole("MANAGER")
                         .requestMatchers("/shifts/history", "/shifts/history/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers("/promotions", "/promotions/**").hasRole("MANAGER")
+                        .requestMatchers("/coupons", "/coupons/**").hasRole("MANAGER")
                         .requestMatchers("/shifts", "/shifts/**", "/sales", "/sales/**").hasRole("CASHIER")
                         .requestMatchers("/invoices", "/invoices/**").hasAnyRole("CASHIER", "MANAGER", "ADMIN")
                         .requestMatchers("/").authenticated()

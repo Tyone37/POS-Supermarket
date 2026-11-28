@@ -282,7 +282,8 @@ class Scrum29SuaSanPhamTest {
         when(db.shift(30)).thenReturn(Optional.of(Map.of("id", 30L, "account_id", 7L, "status", "OPEN")));
         when(db.productsByCode("001234")).thenReturn(List.of(current));
         sale.add("cashier", 10, "001234");
-        verify(db).createItem(10, current);
+        verify(db).createItem(10, current, BigDecimal.ONE, BigDecimal.ZERO,
+                new BigDecimal("25000.00"), null, null, null);
         @SuppressWarnings("unchecked")
         var history = (List<Map<String, Object>>) sale.invoice("manager", 81).get("items");
         assertEquals(new BigDecimal("20000"), history.getFirst().get("unit_price"));

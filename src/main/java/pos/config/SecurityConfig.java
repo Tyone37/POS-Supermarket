@@ -48,11 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/accounts", "/accounts/**").hasRole("ADMIN")
                         .requestMatchers("/products", "/products/**").hasRole("MANAGER")
                         .requestMatchers("/shifts/history", "/shifts/history/**").hasAnyRole("MANAGER", "ADMIN")
-<<<<<<< HEAD
                         .requestMatchers("/promotions", "/promotions/**").hasRole("MANAGER")
                         .requestMatchers("/coupons", "/coupons/**").hasRole("MANAGER")
-=======
->>>>>>> parent of 05ff4cb (revert: restore project to 2dd8a34)
                         .requestMatchers("/shifts", "/shifts/**", "/sales", "/sales/**").hasRole("CASHIER")
                         .requestMatchers("/invoices", "/invoices/**").hasAnyRole("CASHIER", "MANAGER", "ADMIN")
                         .requestMatchers("/").authenticated()

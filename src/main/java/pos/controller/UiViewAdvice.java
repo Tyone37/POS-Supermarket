@@ -12,13 +12,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import pos.entity.AccountEntity;
 
 /** Read-only presentation data. No changes to sale, payment or shift transactions. */
-<<<<<<< HEAD
-@ControllerAdvice(assignableTypes = {PosController.class, PromotionController.class, UiNavigationController.class,
-        CouponController.class})
-=======
-@ControllerAdvice(assignableTypes = {PosController.class, UiNavigationController.class, ShiftClosingController.class,
-        ShiftHistoryController.class, InvoiceSearchController.class, ProductEditController.class})
->>>>>>> parent of 05ff4cb (revert: restore project to 2dd8a34)
+@ControllerAdvice(assignableTypes = {PosController.class, PromotionController.class, CouponController.class,
+        UiNavigationController.class, ShiftClosingController.class, ShiftHistoryController.class,
+        InvoiceSearchController.class, ProductEditController.class})
 public class UiViewAdvice {
     private final EntityManager em;
     public UiViewAdvice(EntityManager em) { this.em = em; }

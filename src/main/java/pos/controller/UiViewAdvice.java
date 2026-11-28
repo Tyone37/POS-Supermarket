@@ -18,13 +18,8 @@ import pos.entity.InvoiceEntity;
 import pos.entity.ShiftEntity;
 
 /** Read-only presentation data. No changes to sale, payment or shift transactions. */
-<<<<<<< HEAD
 @ControllerAdvice(assignableTypes = {PosController.class, PromotionController.class, UiNavigationController.class,
-        ShiftClosingController.class, ShiftHistoryController.class, InvoiceSearchController.class, ProductEditController.class,
         CouponController.class})
-=======
-@ControllerAdvice(assignableTypes = {PosController.class, UiNavigationController.class})
->>>>>>> origin/develop
 public class UiViewAdvice {
     private final EntityManager em;
     public UiViewAdvice(EntityManager em) { this.em = em; }

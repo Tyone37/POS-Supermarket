@@ -1,21 +1,14 @@
 # Test theo user story Sprint 1
 
 Mỗi story có một file riêng. Các hàm test giữ tên tiếng Việt không dấu.
-<<<<<<< HEAD
-Nhánh `fix/gop-code-tin-lam` hiện có 223 ca Java, gồm khuyến mãi/coupon và các chức năng nền còn trong nhánh.
-Các chức năng SCRUM-29/30, SCRUM-45/46 và SCRUM-49–52 đã được tách khỏi nhánh này.
-Hai bộ test service SCRUM-29/30 còn sót đã được loại khỏi nhánh cùng các tham chiếu đến DTO/service đã xóa; bản cũ vẫn có trong lịch sử Git.
-=======
-Giữ nguyên 488 ca Java hiện có và thêm 49 ca SCRUM-30; tổng cộng 537 ca Java.
-SCRUM-46 có thêm 6 test JavaScript, tổng hai bộ test là 543 ca.
->>>>>>> parent of 05ff4cb (revert: restore project to 2dd8a34)
+Bản tích hợp giữ cả quản lý sản phẩm (SCRUM-29/30), hóa đơn (SCRUM-45/46), ca (SCRUM-49–52), khuyến mãi và coupon.
+Đã chạy 665 ca Java và 6 ca JavaScript in hóa đơn, tổng cộng 671 ca; không có lỗi hoặc ca bị bỏ qua.
 Số ca không đồng nghĩa đã bao phủ đầy đủ mọi acceptance criteria.
 
 File trong bảng tính từ `src/test/java/pos/`.
 
 | Jira | User story | File test | Số ca |
 |---|---|---|---:|
-<<<<<<< HEAD
 | Coupon | Phân bổ toàn đơn/sản phẩm, số lượng, điều kiện và làm tròn | `service/CouponDiscountCalculatorTest.java` | 20 |
 | Coupon | Quản lý mã, phạm vi, sản phẩm, thời gian, phân trang và quyền | `service/CouponServiceTest.java` | 34 |
 | Coupon | Thay thế ưu đãi, sửa giỏ và chặn thanh toán coupon cũ | `service/CouponSaleServiceTest.java` | 12 |
@@ -27,13 +20,11 @@ File trong bảng tính từ `src/test/java/pos/`.
 | tin-lam | Giảm giá đơn hàng, checkbox vắng mặt và mức giảm trống | `service/U14GiamGiaDonHangTest.java` | 9 |
 | Sửa lỗi form giảm giá | Binding trường tùy chọn, checkbox và lỗi nhập liệu | `controller/DirectDiscountFormViewTest.java` | 7 |
 | tin-lam + coupon | Xóa sản phẩm, chặn sản phẩm được coupon tham chiếu | `service/UsSp04XoaSanPhamTest.java` | 6 |
-=======
 | SCRUM-45 | Tìm/lọc hóa đơn, phạm vi tài khoản và phân trang | `service/Scrum45TraCuuHoaDonTest.java` | 36 |
 | SCRUM-45 | Render bộ lọc/kết quả, quyền HTTP và liên kết chi tiết | `controller/Scrum45TraCuuHoaDonViewTest.java` | 17 |
 | SCRUM-45 | Điều kiện JPQL, bind/escape mã và snapshot DTO | `repository/Scrum45TruyVanHoaDonTest.java` | 7 |
 | SCRUM-46 | Snapshot, phạm vi tài khoản, in lặp chỉ đọc | `service/Scrum46InHoaDonTest.java` | 18 |
 | SCRUM-46 | Xem trước 80 mm, link in lại, thanh toán và quyền | `controller/Scrum46InHoaDonViewTest.java` | 17 |
->>>>>>> parent of 05ff4cb (revert: restore project to 2dd8a34)
 | SCRUM-24 | US-DN-01 Đăng nhập | `controller/Scrum24DangNhapTest.java` | 10 |
 | SCRUM-25 | US-DN-02 Đăng xuất | `controller/Scrum25DangXuatTest.java` | 3 |
 | SCRUM-26 | US-DN-03 Phân quyền | `controller/Scrum26PhanQuyenTest.java` | 11 |

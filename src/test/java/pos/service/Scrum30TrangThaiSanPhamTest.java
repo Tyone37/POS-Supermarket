@@ -171,6 +171,7 @@ class Scrum30TrangThaiSanPhamTest {
         when(db.productsByCode(code)).thenReturn(List.of(stale));
         assertThrows(BusinessException.class, () -> sales.add("cashier", 10, code));
         verify(db, never()).createItem(anyLong(), any());
+        verify(db, never()).createItem(anyLong(), any(), any(), any(), any(), any(), any(), any());
         verify(db, never()).items(10);
     }
 
@@ -178,6 +179,7 @@ class Scrum30TrangThaiSanPhamTest {
     void quetKhongTimThaySanPhamDangBanKhongTaoDong() {
         assertThrows(BusinessException.class, () -> sales.add("cashier", 10, "001234"));
         verify(db, never()).createItem(anyLong(), any());
+        verify(db, never()).createItem(anyLong(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -195,7 +197,8 @@ class Scrum30TrangThaiSanPhamTest {
         catalog.changeStatus("manager", 20, form("ACTIVE"));
         when(db.productsByCode(code)).thenReturn(List.of(product));
         sales.add("cashier", 10, code);
-        verify(db).createItem(10, product);
+        verify(db).createItem(10, product, BigDecimal.ONE, BigDecimal.ZERO,
+                new BigDecimal("20000.00"), null, null, null);
     }
 
     @Test
